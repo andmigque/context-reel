@@ -252,7 +252,7 @@
 	>
 		<textarea
 			class="input"
-			placeholder="Message the swarm…  (Enter sends · Shift+Enter newline)"
+			placeholder="Message the …  (Enter sends · Shift+Enter newline)"
 			bind:value={composer}
 			onkeydown={onComposerKey}
 			rows="2"

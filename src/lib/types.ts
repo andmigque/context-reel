@@ -3,7 +3,7 @@
 // Spec floor, repeated in all four documents: the code must not use null.
 // We honour that with `undefined` and explicit unions — never the `null` literal.
 
-export type Vendor = 'claude' | 'gemini' | 'gpt' | 'grok' | 'codex';
+export type Vendor = 'claude' | 'gemini' | 'gpt' | 'grok';
 
 /** An agent's live reachability, shown as a pill in the roster. */
 export type AgentStatus = 'ready' | 'active' | 'offline' | 'error';

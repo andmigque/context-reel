@@ -24,7 +24,7 @@ export const VENDOR_META: Record<Vendor, VendorMeta> = {
 		vendor: 'gemini',
 		label: 'Gemini',
 		color: 'var(--vendor-gemini)',
-		defaultModel: 'gemini-2.0-flash',
+		defaultModel: 'gemini-3.5-flash',
 		envVarName: 'GOOGLE_API_KEY',
 		wired: true
 	},
@@ -32,7 +32,7 @@ export const VENDOR_META: Record<Vendor, VendorMeta> = {
 		vendor: 'gpt',
 		label: 'GPT',
 		color: 'var(--vendor-gpt)',
-		defaultModel: 'gpt-4o',
+		defaultModel: 'gpt-5.5',
 		envVarName: 'OPENAI_API_KEY',
 		wired: false
 	},
@@ -40,22 +40,14 @@ export const VENDOR_META: Record<Vendor, VendorMeta> = {
 		vendor: 'grok',
 		label: 'Grok',
 		color: 'var(--vendor-grok)',
-		defaultModel: 'grok-2',
+		defaultModel: 'grok-4.3',
 		envVarName: 'XAI_API_KEY',
-		wired: false
-	},
-	codex: {
-		vendor: 'codex',
-		label: 'Codex',
-		color: 'var(--vendor-codex)',
-		defaultModel: 'gpt-4o',
-		envVarName: 'OPENAI_API_KEY',
 		wired: false
 	}
 };
 
 /** The order vendors appear when adding an agent. */
-export const VENDOR_ORDER: Vendor[] = ['claude', 'gemini', 'gpt', 'grok', 'codex'];
+export const VENDOR_ORDER: Vendor[] = ['claude', 'gemini', 'gpt', 'grok'];
 
 /**
  * The roster seeded into an empty store on first run. Claude leads (active);
@@ -64,7 +56,7 @@ export const VENDOR_ORDER: Vendor[] = ['claude', 'gemini', 'gpt', 'grok', 'codex
  */
 export function defaultRoster(tickBase: number): Agent[] {
 	const seeds: Array<{ vendor: Vendor; active: boolean; status: Agent['status']; description: string }> = [
-		{ vendor: 'claude', active: true, status: 'active', description: 'Leads the swarm. Streams the first answer.' },
+		{ vendor: 'claude', active: true, status: 'active', description: 'Leads the . Streams the first answer.' },
 		{ vendor: 'gemini', active: false, status: 'ready', description: 'Fast second voice in the roster.' },
 		{ vendor: 'gpt', active: false, status: 'offline', description: 'In the roster, waiting for a backend.' },
 		{ vendor: 'grok', active: false, status: 'offline', description: 'In the roster, waiting for a backend.' }

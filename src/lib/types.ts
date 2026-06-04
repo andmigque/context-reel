@@ -1,12 +1,12 @@
-// Cadence domain types.
+// ContextReel domain types.
 //
 // Spec floor, repeated in all four documents: the code must not use null.
 // We honour that with `undefined` and explicit unions — never the `null` literal.
 
 export type Vendor = 'claude' | 'gemini' | 'gpt' | 'grok';
 
-/** An agent's live reachability, shown as a pill in the roster. */
-export type AgentStatus = 'ready' | 'active' | 'offline' | 'error';
+/** A configured model's live reachability, shown as a pill in the roster. */
+export type ModelStatus = 'ready' | 'selected' | 'offline' | 'error';
 
 /**
  * One roster row. Config owns this shape; the chat only reads it.
@@ -14,19 +14,19 @@ export type AgentStatus = 'ready' | 'active' | 'offline' | 'error';
  * The row names the env var that holds the key (`envVarName`). It never holds
  * the key itself — that line is the spine of the Config spec.
  */
-export interface Agent {
+export interface ConfiguredModel {
 	/** Tick stamp; also the IndexedDB key. */
 	id: number;
 	vendor: Vendor;
 	display: string;
 	model: string;
-	status: AgentStatus;
+	status: ModelStatus;
 	/** e.g. "ANTHROPIC_API_KEY". The server reads the real key from here. */
 	envVarName: string;
 	systemPrompt: string;
 	description: string;
-	/** The agent that leads the chat. At most one is active per the v1 design. */
-	active: boolean;
+	/** The selected model for the next message. At most one row is selected. */
+	selected: boolean;
 	/** Empty until auth scopes a roster to a user. Never undefined; '' instead. */
 	userId: string;
 }
@@ -39,7 +39,7 @@ export type TurnState = 'streaming' | 'complete' | 'stopped' | 'error';
 export interface Message {
 	id: number;
 	role: Role;
-	/** Which bot produced an assistant turn; '' for user turns. */
+	/** Which model produced an assistant turn; '' for user turns. */
 	vendor: Vendor | '';
 	text: string;
 	state: TurnState;

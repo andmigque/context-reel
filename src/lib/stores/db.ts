@@ -1,17 +1,17 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
-import type { Agent, Message } from '$lib/types';
+import type { ConfiguredModel, Message } from '$lib/types';
 
 /**
- * The Cadence database. One database, two stores, both keyed by a tick stamp:
+ * The ContextReel database. One database, two stores, both keyed by a tick stamp:
  *   - config:     the roster Config writes and the chat reads.
  *   - transcript: the conversation the client owns and replays to the stateless server.
  *
  * The editor's working doc lives in localStorage (the spec's "today" home), not here.
  */
-interface CadenceDB extends DBSchema {
+interface ContextReelDB extends DBSchema {
 	config: {
 		key: number;
-		value: Agent;
+		value: ConfiguredModel;
 	};
 	transcript: {
 		key: number;
@@ -22,12 +22,12 @@ interface CadenceDB extends DBSchema {
 const DB_NAME = 'cadence';
 const DB_VERSION = 1;
 
-let dbPromise: Promise<IDBPDatabase<CadenceDB>> | undefined;
+let dbPromise: Promise<IDBPDatabase<ContextReelDB>> | undefined;
 
 /** Open (and cache) the database. Browser-only; callers gate on `browser`. */
-export function getDb(): Promise<IDBPDatabase<CadenceDB>> {
+export function getDb(): Promise<IDBPDatabase<ContextReelDB>> {
 	if (dbPromise === undefined) {
-		dbPromise = openDB<CadenceDB>(DB_NAME, DB_VERSION, {
+		dbPromise = openDB<ContextReelDB>(DB_NAME, DB_VERSION, {
 			upgrade(db) {
 				if (!db.objectStoreNames.contains('config')) {
 					db.createObjectStore('config', { keyPath: 'id' });

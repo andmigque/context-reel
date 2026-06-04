@@ -161,6 +161,7 @@ test.describe('Chat', () => {
 			data: {
 				vendor: 'claude',
 				model: 'claude-sonnet-4-6',
+				envVarName: 'ANTHROPIC_API_KEY',
 				systemPrompt: '',
 				turns: [{ role: 'user', content: 'one-shot, no prior context' }]
 			}
@@ -199,7 +200,7 @@ test.describe('Config', () => {
 		expect('key' in row).toBe(false);
 	});
 
-	test('remove keeps the row with the active flag cleared', async ({ page }) => {
+	test('remove keeps the row with the selected flag cleared', async ({ page }) => {
 		await openConfig(page);
 		await page.locator('.row', { hasText: 'Claude' }).locator('.summary').click();
 		await page.locator('.actions .remove').click();
@@ -208,20 +209,30 @@ test.describe('Config', () => {
 				const req = indexedDB.open('cadence');
 				req.onsuccess = () => resolve(req.result);
 			});
-			const rows: Array<{ vendor: string; active: boolean }> = await new Promise((resolve) => {
+			const rows: Array<{ vendor: string; selected: boolean }> = await new Promise((resolve) => {
 				const req = db.transaction('config').objectStore('config').getAll();
 				req.onsuccess = () => resolve(req.result);
 			});
 			return rows.find((r) => r.vendor === 'claude');
 		});
 		expect(claude).toBeTruthy(); // row not deleted
-		expect(claude?.active).toBe(false); // active cleared
+		expect(claude?.selected).toBe(false); // selected cleared
 	});
 
-	test('a new agent reaches the chat', async ({ page }) => {
+	test('selecting a model in config selects it in chat', async ({ page }) => {
+		await openConfig(page);
+		const gemini = page.locator('.row', { hasText: 'Gemini' }).first();
+		await gemini.locator('.summary').click();
+		await gemini.locator('.actions .select').click();
+		await expect(gemini).toHaveAttribute('data-selected', 'true');
+		await tab(page, 'Chat').click();
+		await expect(page.locator('.chip', { hasText: 'Gemini' }).first()).toHaveAttribute('aria-selected', 'true');
+	});
+
+	test('a new model reaches the chat', async ({ page }) => {
 		await openConfig(page);
 		await page.locator('select[aria-label="Vendor to add"]').selectOption('gemini');
-		await page.locator('button.primary', { hasText: 'Add agent' }).click();
+		await page.locator('button.primary', { hasText: 'Add model' }).click();
 		// a second Gemini row now exists in the roster
 		await expect(page.locator('.row', { hasText: 'Gemini' })).toHaveCount(2);
 		// and the chat's selectable roster includes Gemini
@@ -230,7 +241,7 @@ test.describe('Config', () => {
 	});
 
 	test('a dead key reads as error', async ({ page }) => {
-		// Point the agent at an env var that is guaranteed unset on the server,
+		// Point the model at an env var that is guaranteed unset on the server,
 		// so the probe must report error regardless of the dev environment.
 		await openConfig(page);
 		const row = page.locator('.row', { hasText: 'Claude' });
@@ -280,9 +291,9 @@ test.describe('Editor', () => {
 
 	test('a rail pick loads the doc and the preview repaints to match', async ({ page }) => {
 		await page.locator('.rail button.pill', { hasText: 'welcome.md' }).click();
-		await expect(page.locator('#cadence-editor')).toHaveValue(/# Cadence/);
+		await expect(page.locator('#cadence-editor')).toHaveValue(/# ContextReel/);
 		await page.keyboard.press('Alt+Shift+R');
-		await expect(page.locator('.editor .preview')).toContainText('Cadence');
+		await expect(page.locator('.editor .preview')).toContainText('ContextReel');
 	});
 
 	test('the editor fills its panel with no inline pixel height', async ({ page }) => {

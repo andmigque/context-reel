@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
-import type { AgentStatus } from '$lib/types';
+import type { ModelStatus } from '$lib/types';
 
 interface ProbeBody {
 	vendor: string;
@@ -9,13 +9,13 @@ interface ProbeBody {
 }
 
 interface ProbeResult {
-	status: Extract<AgentStatus, 'ready' | 'error'>;
+	status: Extract<ModelStatus, 'ready' | 'error'>;
 	/** Names the env var, never its value. Safe to show and to log. */
 	reason: string;
 }
 
 /**
- * Probe an agent's reachability using the key in its named env var. If the env
+ * Probe a configured model's reachability using the key in its named env var. If the env
  * var is unset on the server, the probe reports error (Config spec).
  *
  * The key value never leaves the server and is never placed in the response —
@@ -26,7 +26,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	const name = body.envVarName?.trim() ?? '';
 
 	if (name === '') {
-		const result: ProbeResult = { status: 'error', reason: 'No env var named on this agent.' };
+		const result: ProbeResult = { status: 'error', reason: 'No env var named on this model.' };
 		return json(result);
 	}
 

@@ -1,75 +1,25 @@
 import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
 import type { StreamRequest } from '$lib/chat/stream';
+import type { TranscriptTurn, Vendor } from '$lib/types';
 
-function delay(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
-}
+type Send = (event: { type: 'token'; value: string } | { type: 'done' } | { type: 'error'; message: string }) => void;
 
-/**
- * Build a synthetic answer from the posted transcript alone. The server keeps
- * nothing between requests — everything it knows rode in with this body.
- */
-function mockAnswer(req: StreamRequest): string {
-	const lastUser = [...req.turns].reverse().find((t) => t.role === 'user');
-	const echo = lastUser ? lastUser.content.trim().slice(0, 200) : '(no prompt)';
-	return [
-		`Streaming live from **${req.vendor}** \`${req.model}\`, token by token — no blank pause.`,
-		'',
-		'> ' + echo.replace(/\n+/g, ' '),
-		'',
-		'A few things this proves, as it arrives:',
-		'',
-		'- the server held no state — your whole transcript rode in with this one request',
-		'- each token is flushed the moment it is made, then appended within a frame',
-		'- a caret blinks at the tail until the stream closes',
-		'',
-		'```ts',
-		'// the seam, in one line',
-		'const answer = stream(transcript); // pure function, transcript -> tokens',
-		'```',
-		'',
-		'That is the whole shape of it.'
-	].join('\n');
-}
-
-/**
- * The stateless stream. Reads the full transcript from the body, returns tokens
- * as NDJSON (one event per line). Mock by default; a real backend slots in where
- * marked once a vendor key is wired.
- */
 export const POST: RequestHandler = async ({ request }) => {
 	const body = (await request.json()) as StreamRequest;
-	const useMock = env.CADENCE_MOCK_STREAM !== 'false';
 	const encoder = new TextEncoder();
 	let cancelled = false;
 
 	const stream = new ReadableStream<Uint8Array>({
 		async start(controller) {
-			const send = (event: unknown) => {
+			const send: Send = (event) => {
 				if (cancelled) return;
 				controller.enqueue(encoder.encode(JSON.stringify(event) + '\n'));
 			};
 
 			try {
-				if (useMock) {
-					await delay(350); // a believable time-to-first-token
-					const answer = mockAnswer(body);
-					const tokens = answer.match(/\S+\s*|\s+/g) ?? [answer];
-					for (const token of tokens) {
-						if (cancelled) break;
-						send({ type: 'token', value: token });
-						await delay(26);
-					}
-				} else {
-					// ── Real vendor streaming slots in here ──────────────────────────
-					// const key = env[body.envVarName]; call the vendor SDK; relay tokens.
-					// Until a backend is wired, fail honestly rather than fake a stream.
-					send({
-						type: 'error',
-						message: `No live backend wired for ${body.vendor} yet. Set CADENCE_MOCK_STREAM=true to stream the mock.`
-					});
-				}
+				const key = readProviderKey(body.envVarName);
+				await streamProvider(body, key, request.signal, send);
 				if (!cancelled) send({ type: 'done' });
 			} catch (err) {
 				send({ type: 'error', message: err instanceof Error ? err.message : 'stream error' });
@@ -77,12 +27,12 @@ export const POST: RequestHandler = async ({ request }) => {
 				try {
 					controller.close();
 				} catch {
-					// already closed by a cancel; nothing to do
+					// already closed by cancel
 				}
 			}
 		},
 		cancel() {
-			cancelled = true; // client pressed Stop or navigated away
+			cancelled = true;
 		}
 	});
 
@@ -94,3 +44,200 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 	});
 };
+
+function readProviderKey(envVarName: string): string {
+	const name = envVarName.trim();
+	if (name === '') throw new Error('Provider key env var name is required.');
+
+	const value = env[name];
+	if (value === undefined || value.trim() === '') {
+		throw new Error(`${name} environment variable is required.`);
+	}
+
+	return value;
+}
+
+async function streamProvider(body: StreamRequest, key: string, signal: AbortSignal, send: Send): Promise<void> {
+	switch (body.vendor) {
+		case 'claude':
+			await streamAnthropic(body, key, signal, send);
+			return;
+		case 'gpt':
+			await streamOpenAICompatible('https://api.openai.com/v1/chat/completions', body, key, signal, send);
+			return;
+		case 'grok':
+			await streamOpenAICompatible('https://api.x.ai/v1/chat/completions', body, key, signal, send);
+			return;
+		case 'gemini':
+			await streamGemini(body, key, signal, send);
+			return;
+	}
+}
+
+async function streamOpenAICompatible(
+	url: string,
+	body: StreamRequest,
+	key: string,
+	signal: AbortSignal,
+	send: Send
+): Promise<void> {
+	const res = await fetch(url, {
+		method: 'POST',
+		signal,
+		headers: {
+			authorization: `Bearer ${key}`,
+			'content-type': 'application/json'
+		},
+		body: JSON.stringify({
+			model: body.model,
+			stream: true,
+			messages: toOpenAIMessages(body.systemPrompt, body.turns)
+		})
+	});
+
+	await requireOk(res);
+	await readSse(res, (event) => {
+		const token = event?.choices?.[0]?.delta?.content;
+		if (typeof token === 'string' && token.length > 0) send({ type: 'token', value: token });
+	});
+}
+
+async function streamAnthropic(body: StreamRequest, key: string, signal: AbortSignal, send: Send): Promise<void> {
+	const res = await fetch('https://api.anthropic.com/v1/messages', {
+		method: 'POST',
+		signal,
+		headers: {
+			'x-api-key': key,
+			'anthropic-version': '2023-06-01',
+			'content-type': 'application/json'
+		},
+		body: JSON.stringify({
+			model: body.model,
+			max_tokens: 4096,
+			stream: true,
+			system: body.systemPrompt.trim() || undefined,
+			messages: toAnthropicMessages(body.turns)
+		})
+	});
+
+	await requireOk(res);
+	await readSse(res, (event) => {
+		const token = event?.delta?.text;
+		if (typeof token === 'string' && token.length > 0) send({ type: 'token', value: token });
+	});
+}
+
+async function streamGemini(body: StreamRequest, key: string, signal: AbortSignal, send: Send): Promise<void> {
+	const model = encodeURIComponent(body.model);
+	const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${key}`, {
+		method: 'POST',
+		signal,
+		headers: {
+			'content-type': 'application/json'
+		},
+		body: JSON.stringify({
+			systemInstruction: body.systemPrompt.trim()
+				? { parts: [{ text: body.systemPrompt.trim() }] }
+				: undefined,
+			contents: toGeminiContents(body.turns)
+		})
+	});
+
+	await requireOk(res);
+	await readSse(res, (event) => {
+		const parts = event?.candidates?.[0]?.content?.parts;
+		if (!Array.isArray(parts)) return;
+		for (const part of parts) {
+			const token = part?.text;
+			if (typeof token === 'string' && token.length > 0) send({ type: 'token', value: token });
+		}
+	});
+}
+
+function toOpenAIMessages(systemPrompt: string, turns: TranscriptTurn[]): Array<{ role: string; content: string }> {
+	const messages = systemPrompt.trim().length > 0 ? [{ role: 'system', content: systemPrompt.trim() }] : [];
+	return [
+		...messages,
+		...turns.map((turn) => ({
+			role: turn.role === 'assistant' ? 'assistant' : 'user',
+			content: turn.content
+		}))
+	];
+}
+
+function toAnthropicMessages(turns: TranscriptTurn[]): Array<{ role: 'user' | 'assistant'; content: string }> {
+	return coalesceTurns(
+		turns.map((turn) => ({
+			role: turn.role === 'assistant' ? 'assistant' : 'user',
+			content: turn.content
+		}))
+	);
+}
+
+function toGeminiContents(turns: TranscriptTurn[]): Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> {
+	return coalesceTurns(
+		turns.map((turn) => ({
+			role: turn.role === 'assistant' ? 'model' : 'user',
+			parts: [{ text: turn.content }]
+		}))
+	);
+}
+
+function coalesceTurns<T extends { role: string }>(turns: T[]): T[] {
+	const result: T[] = [];
+	for (const turn of turns) {
+		const last = result.at(-1);
+		if (!last || last.role !== turn.role) {
+			result.push(turn);
+			continue;
+		}
+
+		if ('content' in last && 'content' in turn && typeof last.content === 'string' && typeof turn.content === 'string') {
+			last.content = `${last.content}\n\n${turn.content}`;
+		} else if ('parts' in last && 'parts' in turn && Array.isArray(last.parts) && Array.isArray(turn.parts)) {
+			last.parts.push(...turn.parts);
+		}
+	}
+	return result;
+}
+
+async function requireOk(res: Response): Promise<void> {
+	if (res.ok) return;
+	const text = await res.text();
+	throw new Error(text || `Provider request failed: ${res.status}`);
+}
+
+async function readSse(res: Response, onEvent: (event: any) => void): Promise<void> {
+	if (res.body === null) throw new Error('Provider returned no stream.');
+
+	const reader = res.body.getReader();
+	const decoder = new TextDecoder();
+	let buffer = '';
+
+	for (;;) {
+		const { value, done } = await reader.read();
+		if (done) break;
+		buffer += decoder.decode(value, { stream: true });
+
+		let boundary = buffer.indexOf('\n\n');
+		while (boundary >= 0) {
+			const raw = buffer.slice(0, boundary);
+			buffer = buffer.slice(boundary + 2);
+			readSseEvent(raw, onEvent);
+			boundary = buffer.indexOf('\n\n');
+		}
+	}
+
+	if (buffer.trim().length > 0) readSseEvent(buffer, onEvent);
+}
+
+function readSseEvent(raw: string, onEvent: (event: any) => void): void {
+	const data = raw
+		.split(/\r?\n/)
+		.filter((line) => line.startsWith('data:'))
+		.map((line) => line.slice(5).trim())
+		.join('\n');
+
+	if (data.length === 0 || data === '[DONE]') return;
+	onEvent(JSON.parse(data));
+}

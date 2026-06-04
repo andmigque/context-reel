@@ -207,7 +207,7 @@
 		max-width: 100%;
 		height: 100% !important;
 	}
-	/* Hide the library's own preview toggle and its split pane. Cadence owns the
+	/* Hide the library's own preview toggle and its split pane. ContextReel owns the
 	   preview (Alt+Shift+R / the Preview button), and the library's two-column
 	   split has no min-width:0, so it overflows the column and breaks the page. */
 	:global(.editor .markdown-editor-wrapper button[title='Preview']) {
@@ -220,7 +220,7 @@
 		grid-template-columns: minmax(0, 1fr) !important;
 		min-width: 0;
 	}
-	/* While Cadence's preview is on, take the library wrapper out of the flow so
+	/* While ContextReel's preview is on, take the library wrapper out of the flow so
 	   the preview owns the full width instead of splitting it. */
 	:global(.editor[data-previewing='true'] .markdown-editor-wrapper) {
 		display: none !important;

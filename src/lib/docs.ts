@@ -15,9 +15,9 @@ export const SAMPLE_DOCS: Doc[] = [
 		id: 'welcome',
 		title: 'welcome.md',
 		text: [
-			'# Cadence',
+			'# ContextReel',
 			'',
-			'A keyboard-chorded workspace. The center swaps; the frame stays.',
+			'_N_ Models, 1 History.',
 			'',
 			'- **Alt+Shift+E** — editor',
 			'- **Alt+Shift+C** — chat',
@@ -40,7 +40,7 @@ export const SAMPLE_DOCS: Doc[] = [
 			'## A code snippet',
 			'',
 			'```ts',
-			'const answer = stream(transcript); // transcript -> tokens',
+			'const answer = stream(history); // history -> tokens',
 			'```',
 			'',
 			'Select a line, press Alt+Shift+Z, and the chat picks it up.'

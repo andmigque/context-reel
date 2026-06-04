@@ -12,7 +12,7 @@
 <nav class="navbar" aria-label="Workspace views">
 	<span class="brand">
 		<span class="dot" aria-hidden="true"></span>
-		Cadence
+		ContextReel
 	</span>
 
 	<div class="tabs" role="tablist">

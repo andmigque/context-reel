@@ -5,14 +5,13 @@
 	import { workspace } from '$lib/stores/workspace.svelte';
 	import { streamChat, type StreamHandle } from '$lib/chat/stream';
 	import { renderMarkdown } from '$lib/markdown';
-	import type { Agent, Message } from '$lib/types';
+	import type { ConfiguredModel, Message } from '$lib/types';
 
 	const STILL_WORKING_MS = 10_000;
 
 	let composer = $state('');
 	let generating = $state(false);
 	let stillWorking = $state(false);
-	let selectedId = $state<number>(-1);
 
 	let handle: StreamHandle | undefined;
 	let watchdog: ReturnType<typeof setTimeout> | undefined;
@@ -22,14 +21,14 @@
 	let threadEl!: HTMLDivElement;
 	let atBottom = true;
 
-	// Agents that can answer: ready or active. Lead with the active one.
+	// Models that can answer: ready or selected first.
 	const selectable = $derived(
-		[...config.agents]
-			.filter((a) => a.status === 'ready' || a.status === 'active')
-			.sort((a, b) => Number(b.active) - Number(a.active))
+		[...config.models]
+			.filter((model) => model.status === 'ready' || model.status === 'selected')
+			.sort((a, b) => Number(b.selected) - Number(a.selected))
 	);
-	const selected = $derived<Agent | undefined>(
-		config.agents.find((a) => a.id === selectedId) ?? selectable[0]
+	const selected = $derived<ConfiguredModel | undefined>(
+		config.selected ?? selectable[0]
 	);
 
 	const lastAssistant = $derived<Message | undefined>(
@@ -73,15 +72,15 @@
 	function send(): void {
 		const text = composer.trim();
 		if (text.length === 0 || generating) return;
-		const agent = selected;
-		if (!agent) return;
+		const model = selected;
+		if (!model) return;
 
 		// 1. Instant: the user turn and the generating state land before any server reply.
 		transcript.append('user', text, '', 'complete');
 		composer = '';
 		atBottom = true;
 
-		const assistant = transcript.append('assistant', '', agent.vendor, 'streaming');
+		const assistant = transcript.append('assistant', '', model.vendor, 'streaming');
 		activeAssistantId = assistant.id;
 		generating = true;
 		stillWorking = false;
@@ -91,7 +90,13 @@
 
 		// 2. Open the stream with the whole transcript. The server keeps nothing.
 		handle = streamChat(
-			{ vendor: agent.vendor, model: agent.model, systemPrompt: agent.systemPrompt, turns: transcript.toTurns() },
+			{
+				vendor: model.vendor,
+				model: model.model,
+				envVarName: model.envVarName,
+				systemPrompt: model.systemPrompt,
+				turns: transcript.toTurns()
+			},
 			{
 				onToken: (value) => {
 					const msg = transcript.messages.find((m) => m.id === activeAssistantId);
@@ -137,9 +142,9 @@
 	}
 
 	// Resend the last user turn — used by Retry and Reroute.
-	function resend(vendorId?: number): void {
+	async function resend(modelId?: number): Promise<void> {
 		if (generating) return;
-		if (vendorId !== undefined) selectedId = vendorId;
+		if (modelId !== undefined) await config.setSelected(modelId);
 		const lastUser = [...transcript.messages].reverse().find((m) => m.role === 'user');
 		if (!lastUser) return;
 		composer = lastUser.text;
@@ -154,17 +159,17 @@
 		// Shift+Enter falls through to insert a newline.
 	}
 
-	// Alt+Shift+<digit> picks the answering agent from the selectable roster.
+	// Alt+Shift+<digit> picks the selected model from the roster.
 	function onVendorChord(event: KeyboardEvent): void {
 		if (workspace.view !== 'chat') return;
 		if (!event.altKey || !event.shiftKey) return;
 		const match = /^Digit([1-9])$/.exec(event.code);
 		if (!match) return;
 		const index = Number(match[1]) - 1;
-		const agent = selectable[index];
-		if (!agent) return;
+		const model = selectable[index];
+		if (!model) return;
 		event.preventDefault();
-		selectedId = agent.id;
+		void config.setSelected(model.id);
 	}
 
 	onMount(() => {
@@ -180,22 +185,22 @@
 </script>
 
 <div class="chat">
-	<div class="roster" role="tablist" aria-label="Answering agent">
-		{#each selectable as agent, i (agent.id)}
+	<div class="roster" role="tablist" aria-label="Selected model">
+		{#each selectable as model, i (model.id)}
 			<button
 				class="chip"
 				role="tab"
-				aria-selected={selected?.id === agent.id}
-				style="--vc:{`var(--vendor-${agent.vendor})`}"
+				aria-selected={selected?.id === model.id}
+				style="--vc:{`var(--vendor-${model.vendor})`}"
 				title={`Alt+Shift+${i + 1}`}
-				onclick={() => (selectedId = agent.id)}
+				onclick={() => config.setSelected(model.id)}
 			>
-				<span class="av" style="background:{`var(--vendor-${agent.vendor})`}"></span>
-				{agent.display}
+				<span class="av" style="background:{`var(--vendor-${model.vendor})`}"></span>
+				{model.display}
 			</button>
 		{/each}
 		{#if selectable.length === 0}
-			<span class="empty">No ready agents — add one in config (Alt+Shift+K).</span>
+			<span class="empty">No ready models. Add one in config (Alt+Shift+K).</span>
 		{/if}
 	</div>
 
@@ -223,9 +228,9 @@
 					{/if}
 					{#if msg.state === 'error'}
 						<div class="recovery">
-							<button onclick={() => resend()}>Retry</button>
-							{#each selectable.filter((a) => a.id !== selectedId) as alt (alt.id)}
-								<button class="reroute" onclick={() => resend(alt.id)}>Reroute → {alt.display}</button>
+							<button onclick={() => void resend()}>Retry</button>
+							{#each selectable.filter((model) => model.id !== selected?.id) as alt (alt.id)}
+								<button class="reroute" onclick={() => void resend(alt.id)}>Reroute → {alt.display}</button>
 							{/each}
 						</div>
 					{/if}
@@ -252,7 +257,7 @@
 	>
 		<textarea
 			class="input"
-			placeholder="Message the …  (Enter sends · Shift+Enter newline)"
+			placeholder="Message the selected model (Enter sends, Shift+Enter adds a line)"
 			bind:value={composer}
 			onkeydown={onComposerKey}
 			rows="2"

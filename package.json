@@ -1,7 +1,7 @@
 {
-	"name": "cadence",
+	"name": "contextreel",
 	"version": "0.1.0",
-	"description": "A keyboard-chorded workspace for streaming, stateless conversation with a  of agents.",
+	"description": "Multiple frontier models, one shared history.",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",

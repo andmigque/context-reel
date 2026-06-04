@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { config } from '$lib/stores/config.svelte';
 	import { VENDOR_ORDER, VENDOR_META } from '$lib/vendors/defaults';
-	import type { Agent, AgentStatus, Vendor } from '$lib/types';
+	import type { ConfiguredModel, ModelStatus, Vendor } from '$lib/types';
 
 	let editingId = $state<number>(-1);
 	let addVendor = $state<Vendor>('claude');
@@ -12,27 +12,27 @@
 		void config.load();
 	});
 
-	function pillClass(status: AgentStatus): string {
+	function pillClass(status: ModelStatus): string {
 		return `pill ${status}`;
 	}
 
 	async function add(): Promise<void> {
-		const agent = await config.add(addVendor);
-		editingId = agent.id;
+		const model = await config.add(addVendor);
+		editingId = model.id;
 	}
 
-	async function probe(agent: Agent): Promise<void> {
-		probing = agent.id;
+	async function probe(model: ConfiguredModel): Promise<void> {
+		probing = model.id;
 		try {
 			const res = await fetch('/api/probe', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ vendor: agent.vendor, envVarName: agent.envVarName })
+				body: JSON.stringify({ vendor: model.vendor, envVarName: model.envVarName })
 			});
-			const result = (await res.json()) as { status: AgentStatus };
-			await config.setStatus(agent.id, result.status);
+			const result = (await res.json()) as { status: ModelStatus };
+			await config.setStatus(model.id, result.status);
 		} catch {
-			await config.setStatus(agent.id, 'error');
+			await config.setStatus(model.id, 'error');
 		} finally {
 			probing = -1;
 		}
@@ -48,37 +48,37 @@
 					<option value={v}>{VENDOR_META[v].label}</option>
 				{/each}
 			</select>
-			<button class="primary" onclick={add}>Add agent</button>
+			<button class="primary" onclick={add}>Add model</button>
 		</div>
 	</header>
 
 	<ul class="roster">
-		{#each config.agents as agent (agent.id)}
-			<li class="row" data-active={agent.active}>
+		{#each config.models as model (model.id)}
+			<li class="row" data-selected={model.selected}>
 				<button
 					class="summary"
-					onclick={() => (editingId = editingId === agent.id ? -1 : agent.id)}
-					aria-expanded={editingId === agent.id}
+					onclick={() => (editingId = editingId === model.id ? -1 : model.id)}
+					aria-expanded={editingId === model.id}
 				>
-					<span class="av" style="background:{`var(--vendor-${agent.vendor})`}">
-						{agent.display.slice(0, 1)}
+					<span class="av" style="background:{`var(--vendor-${model.vendor})`}">
+						{model.display.slice(0, 1)}
 					</span>
 					<span class="names">
-						<span class="display">{agent.display}</span>
-						<span class="model">{agent.model}</span>
+						<span class="display">{model.display}</span>
+						<span class="model">{model.model}</span>
 					</span>
-					<span class={pillClass(agent.status)}>{agent.status}</span>
+					<span class={pillClass(model.status)}>{model.status}</span>
 				</button>
 
-				{#if editingId === agent.id}
+				{#if editingId === model.id}
 					<div class="form">
 						<label>
 							Display name
-							<input value={agent.display} oninput={(e) => config.update(agent.id, { display: e.currentTarget.value })} />
+							<input value={model.display} oninput={(e) => config.update(model.id, { display: e.currentTarget.value })} />
 						</label>
 						<label>
 							Vendor
-							<select value={agent.vendor} onchange={(e) => config.update(agent.id, { vendor: e.currentTarget.value as Vendor })}>
+							<select value={model.vendor} onchange={(e) => config.update(model.id, { vendor: e.currentTarget.value as Vendor })}>
 								{#each VENDOR_ORDER as v (v)}
 									<option value={v}>{VENDOR_META[v].label}</option>
 								{/each}
@@ -86,29 +86,29 @@
 						</label>
 						<label>
 							Model
-							<input value={agent.model} oninput={(e) => config.update(agent.id, { model: e.currentTarget.value })} />
+							<input value={model.model} oninput={(e) => config.update(model.id, { model: e.currentTarget.value })} />
 						</label>
 						<label>
 							Env var name <span class="boundary">(name only — never the key)</span>
-							<input value={agent.envVarName} oninput={(e) => config.update(agent.id, { envVarName: e.currentTarget.value })} />
+							<input value={model.envVarName} oninput={(e) => config.update(model.id, { envVarName: e.currentTarget.value })} />
 						</label>
 						<label class="wide">
 							Description
-							<input value={agent.description} oninput={(e) => config.update(agent.id, { description: e.currentTarget.value })} />
+							<input value={model.description} oninput={(e) => config.update(model.id, { description: e.currentTarget.value })} />
 						</label>
 						<label class="wide">
 							System prompt
-							<textarea rows="3" value={agent.systemPrompt} oninput={(e) => config.update(agent.id, { systemPrompt: e.currentTarget.value })}></textarea>
+							<textarea rows="3" value={model.systemPrompt} oninput={(e) => config.update(model.id, { systemPrompt: e.currentTarget.value })}></textarea>
 						</label>
 
 						<div class="actions">
-							<button onclick={() => probe(agent)} disabled={probing === agent.id}>
-								{probing === agent.id ? 'Probing…' : 'Probe'}
+							<button onclick={() => probe(model)} disabled={probing === model.id}>
+								{probing === model.id ? 'Probing…' : 'Probe'}
 							</button>
-							{#if !agent.active}
-								<button class="lead" onclick={() => config.setActive(agent.id)}>Make lead</button>
+							{#if !model.selected}
+								<button class="select" onclick={() => config.setSelected(model.id)}>Select model</button>
 							{/if}
-							<button class="remove" onclick={() => config.remove(agent.id)}>Remove</button>
+							<button class="remove" onclick={() => config.remove(model.id)}>Remove</button>
 						</div>
 					</div>
 				{/if}
@@ -182,7 +182,7 @@
 		background: var(--bg-raise);
 		overflow: hidden;
 	}
-	.row[data-active='true'] {
+	.row[data-selected='true'] {
 		border-color: var(--amber);
 	}
 	.summary {
@@ -230,7 +230,7 @@
 		color: var(--green);
 		border-color: var(--green);
 	}
-	.pill.active {
+	.pill.selected {
 		color: var(--bg-sink);
 		background: var(--amber);
 		border-color: var(--amber);
@@ -275,7 +275,7 @@
 		color: var(--bone);
 		font-size: 0.82rem;
 	}
-	.actions .lead:hover {
+	.actions .select:hover {
 		border-color: var(--amber);
 		color: var(--amber);
 	}

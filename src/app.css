@@ -1,4 +1,4 @@
-/* Cadence — theme tokens drawn from the spec palette.
+/* ContextReel theme tokens drawn from the spec palette.
    green = live/ready, amber = working/active, red = stop/error, bone = text. */
 :root {
 	--bg: #0e0f13;

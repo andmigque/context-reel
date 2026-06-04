@@ -4,6 +4,7 @@ import type { TranscriptTurn, Vendor } from '$lib/types';
 export interface StreamRequest {
 	vendor: Vendor;
 	model: string;
+	envVarName: string;
 	systemPrompt: string;
 	turns: TranscriptTurn[];
 }

@@ -70,4 +70,57 @@ test.describe('MarkMap', () => {
 		// the placeholder document renders ("Write in the editor" is unique to it)
 		await expect(page.locator(MAP).getByText('Write in the editor')).toBeVisible();
 	});
+
+	test('the first show fits the panel with no NaN transform', async ({ page, workspace }) => {
+		// Regression: building the map while its panel was hidden fit against a 0x0
+		// box, producing translate(NaN,NaN) and a tree shoved off the right edge.
+		// Building on show, after a layout frame, keeps it inside the panel.
+		await showMap(page, workspace);
+		const health = await page.evaluate((sel) => {
+			const svg = document.querySelector(sel) as SVGSVGElement;
+			const g = svg.querySelector('g') as SVGGElement;
+			const s = svg.getBoundingClientRect();
+			const c = g.getBoundingClientRect();
+			return {
+				transform: g.getAttribute('transform') ?? '',
+				fitsHoriz: c.left >= s.left - 1 && c.right <= s.right + 1,
+				fitsVert: c.top >= s.top - 1 && c.bottom <= s.bottom + 1
+			};
+		}, MAP);
+		expect(health.transform).not.toContain('NaN');
+		expect(health.fitsHoriz).toBe(true);
+		expect(health.fitsVert).toBe(true);
+	});
+
+	test('successive documents each fit the panel', async ({ page, workspace }) => {
+		// Regression: setData is async, so a synchronous fit after it read the
+		// prior tree's bounds — clicking through docs landed the map all over the
+		// place (the same doc even gave different positions, some off the edge).
+		// Awaiting setData before the fit keeps every document inside the panel.
+		await showMap(page, workspace);
+		const docs = [
+			{ heading: 'Alpha', md: '# Alpha\n\n- one\n- two' },
+			{ heading: 'Omega with several child nodes', md: '# Omega with several child nodes\n\n- one\n- two\n- three\n- four' },
+			{ heading: 'Bravo', md: '# Bravo' }
+		];
+		for (const doc of docs) {
+			await page.evaluate((detail) => {
+				window.dispatchEvent(new CustomEvent('context-reel:to-editor', { detail }));
+			}, doc.md);
+			// Wait for the new tree to paint before measuring — no fixed sleep.
+			await expect(page.locator(MAP).getByText(doc.heading).first()).toBeVisible();
+			const health = await page.evaluate((sel) => {
+				const svg = document.querySelector(sel) as SVGSVGElement;
+				const g = svg.querySelector('g') as SVGGElement;
+				const s = svg.getBoundingClientRect();
+				const c = g.getBoundingClientRect();
+				return {
+					transform: g.getAttribute('transform') ?? '',
+					fitsHoriz: c.left >= s.left - 1 && c.right <= s.right + 1
+				};
+			}, MAP);
+			expect(health.transform).not.toContain('NaN');
+			expect(health.fitsHoriz).toBe(true);
+		}
+	});
 });

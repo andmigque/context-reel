@@ -2,11 +2,12 @@
 	import { workspace } from '$lib/stores/workspace.svelte';
 	import { SAMPLE_DOCS } from '$lib/docs';
 
-	// A pill click fires the in-zap: dispatch the doc text, then make sure the
-	// editor is the view that receives it.
+	// A pill click fires the in-zap: dispatch the doc onto the channel the editor
+	// and the markmap both listen on. The view does not change — only the chords
+	// move views. The editor persists the doc, and whichever view is open (editor
+	// or markmap) re-renders from it.
 	function pick(text: string): void {
 		window.dispatchEvent(new CustomEvent('context-reel:to-editor', { detail: text }));
-		workspace.show('editor');
 		workspace.drawerOpen = false;
 	}
 </script>

@@ -25,6 +25,9 @@
 	let transformer: TransformerType | undefined;
 	let MarkmapClass: typeof MarkmapType | undefined;
 	let markmap: MarkmapType | undefined;
+	// Bumped per draw; a draw whose number is stale skips its fit so a newer pick
+	// is never overridden by an older one finishing late.
+	let renderSeq = 0;
 
 	/** Read the editor's document, falling back to the placeholder. Read-only. */
 	function currentDoc(): string {
@@ -42,26 +45,39 @@
 	 * leaves the prior tree (or nothing yet) standing — never a blank panel,
 	 * never an uncaught error.
 	 */
-	function renderDoc(markdown: string): void {
+	async function renderDoc(markdown: string): Promise<void> {
 		if (transformer === undefined || MarkmapClass === undefined || svg === undefined) return;
 		const source = markdown.length > 0 ? markdown : PLACEHOLDER;
+		const seq = (renderSeq += 1);
 		try {
 			const { root } = transformer.transform(source);
 			if (markmap === undefined) {
+				// create awaits its own setData before fitting (its documented shape).
 				markmap = MarkmapClass.create(svg, undefined, root);
 			} else {
-				markmap.setData(root);
-				markmap.fit();
+				// Mirror create: setData is async — it measures the new tree before
+				// it resolves. fit reads those measurements, so it must run after.
+				// A synchronous fit reads the prior tree's bounds and lands the map
+				// off-center. Skip a fit a newer pick has already superseded.
+				await markmap.setData(root);
+				if (seq !== renderSeq) return;
+				await markmap.fit();
 			}
 		} catch {
 			// Keep the placeholder or the prior tree. The panel is never blank.
 		}
 	}
 
-	/** A doc arriving on the zap channel carries the editor's document to render. */
+	/**
+	 * A doc on the zap channel carries the editor's document to render. Only draw
+	 * once the map is built; before the first show the editor has already
+	 * persisted the doc, so the first show reads it. Defer a frame so the re-fit
+	 * measures the laid-out panel.
+	 */
 	function onZap(event: Event): void {
+		if (markmap === undefined) return;
 		const text = (event as CustomEvent<string>).detail ?? '';
-		renderDoc(text);
+		requestAnimationFrame(() => renderDoc(text));
 	}
 
 	onMount(async () => {
@@ -71,15 +87,21 @@
 		transformer = new lib.Transformer();
 		MarkmapClass = view.Markmap;
 
-		renderDoc(currentDoc());
+		// Do not build here: the panel may be hidden, and a fit against a
+		// display:none (0x0) box yields NaN transforms and a mis-scaled tree. The
+		// show effect builds the map once the panel is visible — and it also runs
+		// on mount, so a markmap-default view would still paint.
 		window.addEventListener(ZAP_CHANNEL, onZap);
 	});
 
 	// MarkMap renders what's in the editor: when this becomes the shown view, the
-	// component is still mounted, so re-read the editor's document and re-fit.
+	// component is still mounted, so re-read the editor's document and draw. Defer
+	// to the next frame so the panel is visible and laid out before markmap
+	// measures it — a synchronous draw at the un-hide measures a zero-size box and
+	// fits to NaN, which paints the tree off the edge.
 	$effect(() => {
 		if (workspace.view === 'markmap') {
-			renderDoc(currentDoc());
+			requestAnimationFrame(() => renderDoc(currentDoc()));
 		}
 	});
 

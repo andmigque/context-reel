@@ -1,10 +1,11 @@
-# context-reel Mindmap Spec
+# context-reel markmap spec
 
-The document is the truth. The mindmap is a lens.
+The document is the truth. The markmap is a lens.
 
 ## Status
 
-Draft.
+Implemented. The forks the review owned are resolved below;
+one genuine deferral (the source's future home) remains open.
 
 The key words MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY
 in this document are to be interpreted as described in
@@ -16,7 +17,7 @@ all capitals.
 This is a design doc.
 
 It pins one feature: a view that renders the editor's
-document as an interactive mindmap. It is one new view,
+document as an interactive markmap. It is one new view,
 one read seam to the editor's document, and one rendering
 library. It is not contractual, so it is not an SRS. It is
 more than one decision, so it is not an ADR.
@@ -28,9 +29,9 @@ document is markdown. The editor persists it to local
 storage, and the editor's value is the single source of
 truth for that text.
 
-A mindmap reads the same markdown and draws its heading and
+A markmap reads the same markdown and draws its heading and
 bullet hierarchy as a foldable, zoomable, pannable tree. It
-authors nothing. The markdown is the source; the mindmap is
+authors nothing. The markdown is the source; the markmap is
 the view. This is the same single-source relationship the
 editor already keeps with its preview.
 
@@ -44,7 +45,7 @@ host does not.
 
 ## Vocabulary
 
-**Mindmap** is the view that draws the document as a tree.
+**markmap** is the view that draws the document as a tree.
 
 **Document** is the markdown the editor owns and persists
 to local storage.
@@ -81,7 +82,7 @@ Read from `sx-markmap` so the carry-over is concrete.
 
 ## Goals
 
-- The mindmap shows the editor's current document as a
+- The markmap shows the editor's current document as a
   navigable tree.
 - The map tracks the document, so editing is reflected
   without a reload.
@@ -92,12 +93,12 @@ Read from `sx-markmap` so the carry-over is concrete.
 
 ## Non-Goals
 
-- The mindmap does not edit the document. It is read only.
-- The mindmap is not a second source of the document.
-- The mindmap does not replace the editor's preview.
-- The mindmap does not load the rendering library from a
+- The markmap does not edit the document. It is read only.
+- The markmap is not a second source of the document.
+- The markmap does not replace the editor's preview.
+- The markmap does not load the rendering library from a
   CDN. context-reel installs it from npm.
-- The mindmap does not define a git view or any view other
+- The markmap does not define a git view or any view other
   than itself.
 
 ## Proposed Design
@@ -132,7 +133,7 @@ library's CSS variables. The branch link palette is the
 one open theming question.
 
 **The chord.** A jump shortcut, of the shape
-`Alt+Shift+<key>`, selects the mindmap view. The command
+`Alt+Shift+<key>`, selects the markmap view. The command
 identity is registered in the chord registry apart from the
 key, so a rebind moves the key and leaves the command
 alone. The exact key is an open question.
@@ -144,55 +145,55 @@ cannot mark it pass or fail, it is not here.
 
 ### The view
 
-- context-reel MUST provide a mindmap view.
-- context-reel MUST keep the mindmap view mounted across a
+- context-reel MUST provide a markmap view.
+- context-reel MUST keep the markmap view mounted across a
   view swap.
-- When the user swaps away from and back to the mindmap,
+- When the user swaps away from and back to the markmap,
   context-reel MUST NOT reload the page.
-- When the user selects the mindmap chord, context-reel
-  MUST show the mindmap view.
+- When the user selects the markmap chord, context-reel
+  MUST show the markmap view.
 
 ### The source
 
-- The mindmap MUST render the document the editor persists
+- The markmap MUST render the document the editor persists
   to local storage.
-- When the mindmap view is shown, the mindmap MUST render
+- When the markmap view is shown, the markmap MUST render
   the current document.
 - When a document arrives on the editor's zap channel while
-  the mindmap is built, the mindmap MUST re-render from that
+  the markmap is built, the markmap MUST re-render from that
   document.
-- The mindmap MUST NOT write the document.
+- The markmap MUST NOT write the document.
 
 ### The rendering
 
-- The mindmap MUST transform the document markdown into a
+- The markmap MUST transform the document markdown into a
   node tree before rendering.
-- The mindmap MUST render the node tree as an SVG mindmap.
-- On first render, the mindmap MUST fit the tree to the
+- The markmap MUST render the node tree as an SVG markmap.
+- On first render, the markmap MUST fit the tree to the
   viewport.
-- The mindmap MUST let the user fold a node.
-- The mindmap MUST let the user pan and zoom the tree.
-- While the document is empty, the mindmap MUST render a
+- The markmap MUST let the user fold a node.
+- The markmap MUST let the user pan and zoom the tree.
+- While the document is empty, the markmap MUST render a
   placeholder document.
 
 ### Should and may
 
-- The mindmap SHOULD re-fit the tree when the document
+- The markmap SHOULD re-fit the tree when the document
   changes.
-- The mindmap MAY theme the branch links to the palette.
-- The mindmap MAY expose a control to re-fit on demand.
+- The markmap MAY theme the branch links to the palette.
+- The markmap MAY expose a control to re-fit on demand.
 
 ## Prohibitions
 
 A prohibition is a goal you could chase and choose not to.
 It is the floor under the design.
 
-- The mindmap MUST NOT persist the document.
-- The mindmap MUST NOT hold a second copy of the document
+- The markmap MUST NOT persist the document.
+- The markmap MUST NOT hold a second copy of the document
   as its own source.
-- The mindmap MUST NOT load the rendering library from a
+- The markmap MUST NOT load the rendering library from a
   CDN.
-- The mindmap MUST NOT freeze an inline pixel height on its
+- The markmap MUST NOT freeze an inline pixel height on its
   panel. The panel height is fluid.
 - The code MUST NOT use the `null` literal.
 
@@ -223,16 +224,16 @@ zap channel and to show is chosen.
 
 ## Cross-Cutting Concerns
 
-**Secrets.** None. The mindmap reads a local document and
+**Secrets.** None. The markmap reads a local document and
 calls no provider. It touches no key and no env var.
 
 **Performance.** A large document is a large tree. The
-mindmap SHOULD render a document of at least the size of
+markmap SHOULD render a document of at least the size of
 this spec without a visible stall. Folding keeps deep trees
 navigable.
 
 **Accessibility.** The SVG MUST carry a label naming it as
-the document mindmap. Folding and pan are pointer-driven in
+the document markmap. Folding and pan are pointer-driven in
 the reference; keyboard navigation of the tree is a later
 concern, not a first-pass requirement.
 
@@ -249,25 +250,25 @@ and the real library. No stubbed tree.
 
 ```gherkin
 Given the editor holds a document with headings and bullets
-When the user shows the mindmap
-Then the mindmap renders a node for the top heading
+When the user shows the markmap
+Then the markmap renders a node for the top heading
 And the tree is fit within the panel
 ```
 
 ### The map tracks the writing
 
 ```gherkin
-Given the mindmap is the shown view
+Given the markmap is the shown view
 When a new document arrives on the zap channel
-Then the mindmap re-renders from the new document
+Then the markmap re-renders from the new document
 ```
 
 ### The map survives a view swap
 
 ```gherkin
-Given the mindmap has rendered a document
+Given the markmap has rendered a document
 When the user swaps to the chat and back
-Then the mindmap still shows the document
+Then the markmap still shows the document
 And the page did not reload
 ```
 
@@ -275,39 +276,36 @@ And the page did not reload
 
 ```gherkin
 Given the editor document is empty
-When the user shows the mindmap
-Then the mindmap renders the placeholder document
+When the user shows the markmap
+Then the markmap renders the placeholder document
 ```
+
+## Resolved Decisions
+
+The review picked one of each fork it owned.
+
+**The view's name in the union.** `markmap`. The workspace
+view union reads `markmap`, the component is `Markmap.svelte`,
+the chord command is `jump.markmap`, and the tab reads
+`MarkMap`. One concept, one name, everywhere.
+
+**The chord key.** `Alt+Shift+M` opens the mind map — M for
+map, clear of the held E, C, K and the reserved G.
+
+**The branch palette.** Left at the library default, as in
+the `sx-markmap` reference. Node text and inline code theme
+to the palette through the library's CSS variables; the
+branch links keep the d3 default.
+
+**The re-render trigger beyond the zap.** None. The map
+renders what is in the editor: it renders from the zap
+channel, and re-reads the editor's document when the view is
+shown. It does not observe live editor keystrokes and does
+not poll.
 
 ## Open Questions
 
-Genuine forks. The review picks one of each. Everything
-above is decided.
-
-**The chord key.** The jump shortcut family is
-`Alt+Shift+<key>`. Editor, chat, and config already hold E,
-C, and K. G is reserved for a future git view. Which key
-opens the mindmap is open.
-
-**The branch palette.** Node text themes cleanly through
-the library's CSS variables. The branch link colors come
-from the library's own palette option, undefined in the
-reference, so they fall to the d3 default. Whether to pass
-a palette that cycles the context-reel colors, and by what
-key (node depth or branch), is open.
-
-**The re-render trigger beyond the zap.** The reference
-re-renders on mount and on the zap channel. The editor also
-persists on every keystroke. Whether the mindmap should
-also re-render from live editor input, and how to observe
-it without coupling to the editor component, is open.
-
 **The source's future home.** The document lives in local
 storage today. The product spec names IndexedDB as the
-target. When the editor moves, the mindmap's read seam
+target. When the editor moves, the mind map's read seam
 moves with it. The timing is open.
-
-**The view's name in the union.** The workspace view union
-holds editor, chat, and config. The mindmap adds one value.
-Whether it reads `mindmap` or `markmap` in the code and UI
-is open; pick one and use it everywhere.

@@ -15,6 +15,7 @@ export const CHORD_BINDINGS: ChordBinding[] = [
 	{ command: 'jump.editor', chord: 'Alt+Shift+E', label: 'Jump to the editor' },
 	{ command: 'jump.chat', chord: 'Alt+Shift+C', label: 'Jump to the chat' },
 	{ command: 'jump.config', chord: 'Alt+Shift+K', label: 'Jump to config' },
+	{ command: 'jump.markmap', chord: 'Alt+Shift+M', label: 'Jump to the mind map' },
 	{ command: 'editor.zapToChat', chord: 'Alt+Shift+Z', label: 'Zap the selection into the chat' },
 	{ command: 'editor.togglePreview', chord: 'Alt+Shift+R', label: 'Toggle the rendered preview' },
 	{ command: 'workspace.openZapDrawer', chord: 'Alt+Shift+ArrowLeft', label: 'Open the doc drawer' },

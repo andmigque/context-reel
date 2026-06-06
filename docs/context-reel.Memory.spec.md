@@ -1,243 +1,358 @@
-# context-reel Memory Spec
+# 🎞️ context-reel memory spec
 
-Browse the memory. Add to it. Never hold the secret.
+> A WebUI for the Memory data store.
+> This will piggy back off of the editor and chat views, exposing the memory functions to the UI.
 
-## Status
+This is a design doc for one feature.
+This is for a view that browses and adds agent memories.
+
+---
+
+## <span style="color:#ffaa24">🧭 Contents</span>
+
+- Status
+- Document Type
+- Context
+- Vocabulary
+- What The Reference Does
+- Goals
+- Non-Goals
+- Proposed Design
+- Requirements
+
+---
+
+## <span style="color:#ffaa24">🔖 Status</span>
 
 Draft.
 
-The key words MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY
-in this document are to be interpreted as described in
-RFC 2119 and RFC 8174 when, and only when, they appear in
-all capitals.
+> MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY
+> carry their RFC 2119 and RFC 8174 meaning.
+> Only when they appear in all capitals.
 
-## Document Type
+---
+
+## <span style="color:#ffaa24">📐 Document Type</span>
 
 This is a design doc.
 
-It pins one feature: a view that browses and adds agent
-memories. It is one new view, one read-and-write seam to
-the memory data plane, and one secret boundary. The secret
-boundary makes it more than an ADR. It is not contractual,
-so it is not an SRS.
+It pins one feature.
 
-## Context
+A view that browses and adds agent memories.
 
-Agents record memories so a later session starts warm. A
-memory is one sentence over a controlled vocabulary: an
-entity, a relation, a target entity, a work domain, and the
-notes that complete the sentence. The store is the memory
-data plane: a Supabase table with hybrid full-text and
-vector search, written through a `new_memory` call and read
-through search and listing calls.
+The feature is three things.
 
-The feature exists working as a prototype in a sibling
-example project, EdgeGrammar, as the Node files `web.js`,
-`web.html.js`, and `index.js`. That prototype is the
-reference for the interaction model: an entity-tabbed feed,
-a new-memory form over the vocabularies, a relation graph,
-saved view states, and a raw-JSON peek.
+- One new view.
+- One read-and-write seam to the memory data plane.
+- One secret boundary.
 
-The prototype is the reference, not the target. It is a
-Node server that read JSONL files straight off the local
-disk and held a provider key in process. Those JavaScript
-server files were later removed from EdgeGrammar as a
-security remediation. context-reel re-platforms the
-interaction onto its own stack: SvelteKit routes as the
-seam, the Supabase memory plane as the store, and the same
-secret boundary the rest of context-reel already keeps. The
-browser never holds a provider key or a service-role key.
+The secret boundary makes it more than an ADR.
 
-## Vocabulary
+It sets no contract.
 
-**Memory** is one recorded sentence: entity, relation,
-target entity, work, and notes.
+So it is not an SRS.
 
-**Entity** is the actor, such as Claude or the Architect.
+---
 
-**Relation** is the verb that joins the entity to the
-target.
+## <span style="color:#ffaa24">🧠 Context</span>
 
-**Work** is the domain the memory belongs to.
+Agents record memories.
 
-**Notes** is the body that completes the sentence.
+A later session starts warm.
 
-**Edge** is the relation, target entity, and work carried
-with a memory.
+A memory is one sentence over a controlled vocabulary.
 
-**Vocabulary** is a controlled set: the allowed entities,
-relations, and works. The server rejects a value outside
-its set.
+- An entity.
+- A relation.
+- A target entity.
+- A work domain.
+- The notes that complete the sentence.
 
-**Feed** is the list of memories shown for the selected
-entities.
+The store is the memory data plane.
 
-**Graph** is the relation graph drawn from the feed's
-edges.
+A Supabase table with hybrid full-text and vector search.
 
-## What The Reference Does
+- You write through a `new_memory` call.
+- You read through search and listing calls.
 
-Read from the prototype so the carry-over is concrete.
+### <span style="color: #D2A8FF">The reference prototype</span>
 
-- A row of entity tabs picks whose memories show. A click
-  selects one entity; a modified click adds or removes one,
-  so several entities can show at once. A Collab tab shows
-  the collaboration edges.
-- The feed fetches memories for the selected entities,
-  dedupes by id, sorts newest first, and caps at a limit
-  the user sets. A relation filter narrows the fetch.
-- Each memory is a card, collapsed by default: a date, the
-  sentence of entity, relation, target, and work, and the
-  notes. A control reveals the raw record. A toggle hides
-  the whole feed.
-- A new-memory form holds four selects over the
-  vocabularies, a Collab flag, a notes editor, and Save. It
-  posts the memory and the feed refreshes.
-- A graph toggle draws the entities on a circle with
-  directed edges for their relations. Hover or click an
-  entity to highlight its edges; click the background to
-  clear. The graph is derived at runtime from the fetched
-  edges; nothing is hardcoded.
-- A sidebar holds named saved view states. The current view
-  state also restores on reload.
-- Keyboard shortcuts focus the notes, toggle the graph,
-  hide the feed, and save.
+The feature already runs as a prototype.
 
-The prototype also embedded a provider chat that wrote a
-memory per turn. That is out of scope here; context-reel
-already owns chat.
+It lives in a sibling project, EdgeGrammar.
 
-## Goals
+Three Node files carry it.
 
-- A user can browse memories by entity, newest first.
-- A user can narrow the feed by relation and cap its size.
-- A user can read any memory's full notes and its raw
-  record.
-- A user can add a memory over the controlled vocabularies
-  in one view.
-- A user can see the relation graph drawn from the memories
-  on screen.
-- No provider key and no service-role key ever reach the
-  browser.
-- One concept has one name across the UI, code, and tests.
+- `web.js`
+- `web.html.js`
+- `index.js`
 
-## Non-Goals
+That prototype is the reference for the interaction model.
 
-- The Memory view does not embed a chat. context-reel's
-  chat is its own view.
+- An entity-tabbed feed.
+- A new-memory form over the vocabularies.
+- A relation graph.
+- Saved view states.
+- A raw-JSON peek.
+
+The prototype is the reference, not the target.
+
+It was a Node server.
+
+- It read JSONL files straight off local disk.
+- It held a provider key in process.
+
+Those server files were later removed from EdgeGrammar.
+
+The removal was a security fix.
+
+context-reel re-platforms the interaction onto its own stack.
+
+- SvelteKit routes as the seam.
+- The Supabase memory plane as the store.
+- The same secret boundary context-reel already keeps.
+
+The browser never holds a provider key.
+
+The browser never holds a service-role key.
+
+---
+
+## <span style="color: #ffaa24">📖 Vocabulary</span>
+
+**Memory**
+One recorded sentence: entity, relation, target, work, notes.
+
+**Entity**
+The actor, such as Claude or the Architect.
+
+**Relation**
+The verb that joins the entity to the target.
+
+**Work**
+The domain the memory belongs to.
+
+**Notes**
+The body that completes the sentence.
+
+**Edge**
+The relation, target entity, and work carried with a memory.
+
+**Vocabulary**
+A controlled set of allowed entities, relations, and works.
+The server rejects any value outside its set.
+
+**Feed**
+The list of memories shown for the selected entities.
+
+**Graph**
+The relation graph drawn from the feed's edges.
+
+---
+
+## <span style="color:#ffaa24">🪞 What The Reference Does</span>
+
+> Read from the prototype.
+> Keep the carry-over concrete.
+
+### <span style="color: #D2A8FF">Entity tabs</span>
+
+- A click selects one entity.
+- A modified click adds or removes one.
+- Several entities can show at once.
+- A Collab tab shows the collaboration edges.
+
+### <span style="color: #D2A8FF">The feed</span>
+
+- Fetches memories for the selected entities.
+- Dedupes by id.
+- Sorts newest first.
+- Caps at a limit the user sets.
+- A relation filter narrows the fetch.
+
+### <span style="color: #D2A8FF">Each memory</span>
+
+- A card, collapsed by default.
+- Shows the date.
+- Shows the sentence of entity, relation, target, and work.
+- Shows the notes.
+- A control reveals the raw record.
+- A toggle hides the whole feed.
+
+### <span style="color: #D2A8FF">The form</span>
+
+- Four selects over the vocabularies.
+- A Collab flag.
+- A notes editor.
+- A Save action.
+- It posts the memory, then the feed refreshes.
+
+### <span style="color: #D2A8FF">The graph</span>
+
+- Draws the entities on a circle.
+- Directed edges show their relations.
+- Hover or click an entity to highlight its edges.
+- Click the background to clear.
+- Derived at runtime from the fetched edges.
+- Nothing is hardcoded.
+
+### <span style="color: #D2A8FF">The sidebar</span>
+
+- Holds named saved view states.
+- The current view state restores on reload.
+
+### <span style="color: #D2A8FF">Shortcuts</span>
+
+- Focus the notes.
+- Toggle the graph.
+- Hide the feed.
+- Save.
+
+The prototype also embedded a provider chat.
+
+It wrote a memory per turn.
+
+That is out of scope here.
+
+context-reel already owns chat.
+
+---
+
+## <span style="color:#4ade80">🎯 Goals</span>
+
+- Browse memories by entity, newest first.
+- Narrow the feed by relation and cap its size.
+- Read any memory's full notes and its raw record.
+- Add a memory over the controlled vocabularies in one view.
+- See the relation graph drawn from the memories on screen.
+- No provider key ever reaches the browser.
+- No service-role key ever reaches the browser.
+- One concept has one name across UI, code, and tests.
+
+---
+
+## <span style="color: #D2A8FF">🚫 Non-Goals</span>
+
+- The Memory view does not embed a chat.
+- The chat is its own view.
 - The Memory view does not write a memory per chat turn.
 - The Memory view does not read memories from local files.
-  The store is the Supabase memory plane.
-- The Memory view does not hold a provider key, a
-  service-role key, or any secret value.
-- The Memory view does not define the vocabularies. They
-  are the data plane's, and the server is their authority.
-- The Memory view does not build a feed row from an HTML
-  string.
+- The store is the Supabase memory plane.
+- The Memory view does not hold a provider key.
+- The Memory view does not hold a service-role key.
+- The Memory view does not hold any secret value.
+- The Memory view does not define the vocabularies.
+- The data plane owns them; the server is their authority.
+- The Memory view does not build a feed row from HTML.
 
-## Proposed Design
+---
 
-**The view.** A new Svelte component, `Memory.svelte`,
-joins the workspace beside the editor, chat, and config. It
-mounts once and is shown or hidden by `workspace.view`, so
-a view swap never reloads the page.
+## <span style="color:#ffaa24">🏗️ Proposed Design</span>
 
-**The seam.** SvelteKit routes under `/api/memory` are the
-only path to the store. A read route lists memories for the
-selected entities; a write route records a new memory. The
-routes hold the publishable key and the agent identity in
-the server environment and call the memory data plane's
-list and `new_memory` operations. The browser calls the
-routes; it never calls the data plane directly and never
-holds a key.
+### <span style="color: #D2A8FF">The view</span>
 
-**The feed.** Entity tabs drive a fetch through the read
-route. The result is deduped by id, sorted newest first,
-and capped at the user's limit. A relation filter narrows
-the request. Rows render from data through Svelte markup,
-never from HTML strings.
+- A new Svelte component, `Memory.svelte`.
+- Joins the workspace beside editor, chat, and config.
+- Mounts once.
+- `workspace.view` shows or hides it.
+- A view swap never reloads the page.
 
-**The form.** Four selects mirror the entity, work, target
-entity, and relation vocabularies, plus a Collab flag and a
-notes editor. context-reel's editor library,
-markdown-text-editor, is the notes editor, so the app keeps
-one editor. Save posts through the write route; on success
-the feed refreshes.
+### <span style="color: #D2A8FF">The seam</span>
 
-**The graph.** A toggle draws an SVG relation graph: the
-entities on a circle, directed edges for their relations,
-hover and click to highlight an entity's edges. The graph
-data is derived at runtime from the fetched edges.
+- SvelteKit routes under `/api/memory` are the only path.
+- A read route lists memories for the selected entities.
+- A write route records a new memory.
+- The routes hold the publishable key in the server.
+- The routes hold the agent identity in the server.
+- They call the data plane's list and `new_memory` calls.
+- The browser calls the routes, never the data plane.
+- The browser never holds a key.
 
-**View state.** The selected entities, the limit, the
-relation filter, and the graph toggle persist as client
-state so the view restores across a reload, consistent with
-how the workspace keeps its other state.
+### <span style="color: #D2A8FF">The feed</span>
 
-**Chords.** Memory actions register in the chord registry
-as `Alt+Shift+<key>` commands, command identity apart from
-the key, like every other context-reel shortcut.
+- Entity tabs drive a fetch through the read route.
+- The result is deduped by id.
+- The result is sorted newest first.
+- The result is capped at the user's limit.
+- A relation filter narrows the request.
+- Rows render from data through Svelte markup.
+- Rows never render from HTML strings.
 
-## Requirements
+### <span style="color: #D2A8FF">The form</span>
 
-Each requirement is one shape, one capability. If a test
-cannot mark it pass or fail, it is not here.
+- Four selects mirror entity, work, target, and relation.
+- Plus a Collab flag and a notes editor.
+- The notes editor is markdown-text-editor.
+- The app keeps one editor.
+- Save posts through the write route.
+- On success the feed refreshes.
 
-### The secret boundary
+### <span style="color: #D2A8FF">The graph</span>
 
-- The Memory view MUST read and write memories only through
-  a server route.
-- The server route MUST hold the publishable key and the
-  agent identity in the server environment.
-- The Memory view MUST NOT hold a provider key or a
-  service-role key.
+- A toggle draws an SVG relation graph.
+- The entities sit on a circle.
+- Directed edges show their relations.
+- Hover and click highlight an entity's edges.
+- The data is derived at runtime from the edges.
+
+### <span style="color: #D2A8FF">View state</span>
+
+- Selected entities, limit, filter, and graph toggle persist.
+- They persist as client state.
+- The view restores across a reload.
+- This matches how the workspace keeps its other state.
+
+### <span style="color: #D2A8FF">Chords</span>
+
+- Memory actions register in the chord registry.
+- Each is an `Alt+Shift+<key>` command.
+- Command identity stays apart from the key.
+- This matches every other context-reel shortcut.
+
+---
+
+## <span style="color:#ffaa24">✅ Requirements</span>
+
+> Each requirement is one shape, one capability.
+> If a test cannot mark it pass or fail, it is not here.
+
+### <span style="color: #D2A8FF">The secret boundary</span>
+
+- The Memory view MUST read and write only through a route.
+- The route MUST hold the publishable key in the server.
+- The route MUST hold the agent identity in the server.
+- The Memory view MUST NOT hold a provider key.
+- The Memory view MUST NOT hold a service-role key.
 - The Memory view MUST NOT display or log a key.
 
-### The feed
+### <span style="color: #D2A8FF">The feed</span>
 
-- The Memory view MUST list memories for the selected
-  entities.
+- The Memory view MUST list memories for the selected entities.
 - The Memory view MUST let the user select one entity.
-- The Memory view MUST let the user select several entities
-  at once.
+- The Memory view MUST let the user select several entities.
 - The Memory view MUST sort the feed newest first.
-- The Memory view MUST remove duplicate memories from the
-  feed by id.
+- The Memory view MUST remove duplicate memories by id.
 - The Memory view MUST cap the feed at the user's limit.
-- When the user sets a relation filter, the Memory view
-  MUST narrow the feed to that relation.
-- The Memory view MUST show each memory's entity, relation,
-  target entity, work, and notes.
-- The Memory view MUST let the user reveal a memory's raw
-  record.
+- On a relation filter, the Memory view MUST narrow the feed.
+- The Memory view MUST show entity, relation, target, work, notes.
+- The Memory view MUST let the user reveal the raw record.
 
-### The form
+### <span style="color: #D2A8FF">The form</span>
 
-- The Memory view MUST offer the entity, work, target
-  entity, and relation values as selects over the
-  controlled vocabularies.
-- When the user saves a memory, the Memory view MUST post
-  it through the write route.
-- If the server rejects a value outside a vocabulary, then
-  the Memory view MUST show the error and MUST NOT clear
-  the form.
-- When a save succeeds, the Memory view MUST refresh the
-  feed.
+- The Memory view MUST offer entity, work, target, and relation as selects over the vocabularies.
+- On save, the Memory view MUST post through the write route.
+- On a rejected value, the Memory view MUST show the error.
+- On that rejection, the Memory view MUST NOT clear the form.
+- On a successful save, the Memory view MUST refresh the feed.
 
-### The graph
+### <span style="color: #D2A8FF">The graph</span>
 
-- When the user toggles the graph on, the Memory view MUST
-  draw the entities and their relation edges.
-- The Memory view MUST derive the graph from the fetched
-  edges, not from a hardcoded set.
-- When the user highlights an entity, the Memory view MUST
-  emphasize that entity's edges.
+- On graph toggle, the Memory view MUST draw the entities and their relation edges.
+- The Memory view MUST derive the graph from the fetched edges, not a hardcoded set.
+- On highlight, the Memory view MUST emphasize that entity's edges.
 
-### Should and may
+### <span style="color:#4ade80">Should and may</span>
 
-- The feed SHOULD restore its selected entities, limit, and
-  filter across a reload.
-- The Memory view MAY let the user save and restore named
-  view states.
-- The Memory view MAY offer a search over the memory plane's
-  full-text and vector index.
+- The feed SHOULD restore its entities, limit, and filter across a reload.
+- The Memory view MAY let the user save and restore named view states.
+- The Memory view MAY offer a search over the full-text and vector index.

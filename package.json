@@ -25,7 +25,9 @@
 		"drizzle-orm": "^0.45.2",
 		"idb": "^8.0.0",
 		"markdown-text-editor": "^1.2.0",
-		"marked": "^15.0.0"
+		"marked": "^15.0.0",
+		"markmap-lib": "^0.18.12",
+		"markmap-view": "^0.18.12"
 	},
 	"overrides": {
 		"cookie": "^0.7.0"

@@ -5,7 +5,8 @@
 	const tabs: Array<{ view: ViewName; label: string; chord: string }> = [
 		{ view: 'editor', label: 'Editor', chord: 'Alt+Shift+E' },
 		{ view: 'chat', label: 'Chat', chord: 'Alt+Shift+C' },
-		{ view: 'config', label: 'Config', chord: 'Alt+Shift+K' }
+		{ view: 'config', label: 'Config', chord: 'Alt+Shift+K' },
+		{ view: 'markmap', label: 'MarkMap', chord: 'Alt+Shift+M' }
 	];
 </script>
 

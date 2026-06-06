@@ -10,6 +10,7 @@
 	import Editor from './Editor.svelte';
 	import Chat from './Chat.svelte';
 	import Config from './Config.svelte';
+	import Markmap from './Markmap.svelte';
 
 	function run(command: ChordCommand): void {
 		switch (command) {
@@ -21,6 +22,9 @@
 				break;
 			case 'jump.config':
 				workspace.show('config');
+				break;
+			case 'jump.markmap':
+				workspace.show('markmap');
 				break;
 			case 'workspace.openZapDrawer':
 				workspace.toggleDrawer();
@@ -47,11 +51,12 @@
 	<ZapRail />
 
 	<main class="view" aria-label="Active view">
-		<!-- All three views stay mounted; we toggle which is shown so a doc, a
-		     stream, and the roster all survive a view swap with no reload. -->
+		<!-- Every view stays mounted; we toggle which is shown so a doc, a stream,
+		     the roster, and the mind map all survive a view swap with no reload. -->
 		<div class="slot" hidden={workspace.view !== 'editor'}><Editor /></div>
 		<div class="slot" hidden={workspace.view !== 'chat'}><Chat /></div>
 		<div class="slot" hidden={workspace.view !== 'config'}><Config /></div>
+		<div class="slot" hidden={workspace.view !== 'markmap'}><Markmap /></div>
 	</main>
 
 	<ChordRail />

@@ -57,6 +57,7 @@ export type ChordCommand =
 	| 'jump.editor'
 	| 'jump.chat'
 	| 'jump.config'
+	| 'jump.markmap'
 	| 'editor.zapToChat'
 	| 'editor.togglePreview'
 	| 'workspace.openZapDrawer'
@@ -71,8 +72,8 @@ export interface ChordBinding {
 	label: string;
 }
 
-/** The three views the active-view column can host. */
-export type ViewName = 'editor' | 'chat' | 'config';
+/** The views the active-view column can host. */
+export type ViewName = 'editor' | 'chat' | 'config' | 'markmap';
 
 /** A turn as posted to the stateless stream endpoint. */
 export interface TranscriptTurn {

@@ -5,7 +5,7 @@
 	// A pill click fires the in-zap: dispatch the doc text, then make sure the
 	// editor is the view that receives it.
 	function pick(text: string): void {
-		window.dispatchEvent(new CustomEvent('cadence:to-editor', { detail: text }));
+		window.dispatchEvent(new CustomEvent('context-reel:to-editor', { detail: text }));
 		workspace.show('editor');
 		workspace.drawerOpen = false;
 	}

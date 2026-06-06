@@ -1,10 +1,11 @@
-# ContextReel
+# context-reel
 
 _N_ Models, 1 History.
 
-ContextReel is a chat workspace where multiple frontier models share one history. Send a turn to Claude, GPT, Gemini, or Grok; the next selected model receives the same history. Model markdown can move into the editor, change there, and return to chat.
-
-Keyboard shortcuts make the workflow faster. They are not the product.
+context-reel is a chat workspace where multiple frontier models share one history. 
+Send a turn to Claude, GPT, Gemini, or Grok; the next selected model receives the same history. 
+Send markdown back and forth from the chat to the wysiwyg editor.
+Every action is available as a keyboard shortcut so your hands never have to touch a mouse.
 
 ## Quick Start
 

@@ -34,7 +34,7 @@
 			case 'editor.zapToChat':
 			case 'editor.togglePreview':
 				// Editor-owned: hand off to the editor, which acts only if mounted.
-				window.dispatchEvent(new CustomEvent('cadence:command', { detail: command }));
+				window.dispatchEvent(new CustomEvent('context-reel:command', { detail: command }));
 				break;
 		}
 	}

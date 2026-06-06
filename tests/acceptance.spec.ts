@@ -10,7 +10,7 @@ async function freshWorkspace(page: Page): Promise<void> {
 	await page.goto('/');
 	await page.evaluate(async () => {
 		await new Promise<void>((resolve) => {
-			const req = indexedDB.deleteDatabase('cadence');
+			const req = indexedDB.deleteDatabase('context-reel');
 			req.onsuccess = req.onerror = req.onblocked = () => resolve();
 		});
 		localStorage.clear();
@@ -184,7 +184,7 @@ test.describe('Config', () => {
 		await openConfig(page);
 		const row = await page.evaluate(async () => {
 			const db: IDBDatabase = await new Promise((resolve, reject) => {
-				const req = indexedDB.open('cadence');
+				const req = indexedDB.open('context-reel');
 				req.onsuccess = () => resolve(req.result);
 				req.onerror = () => reject(req.error);
 			});
@@ -206,7 +206,7 @@ test.describe('Config', () => {
 		await page.locator('.actions .remove').click();
 		const claude = await page.evaluate(async () => {
 			const db: IDBDatabase = await new Promise((resolve) => {
-				const req = indexedDB.open('cadence');
+				const req = indexedDB.open('context-reel');
 				req.onsuccess = () => resolve(req.result);
 			});
 			const rows: Array<{ vendor: string; selected: boolean }> = await new Promise((resolve) => {
@@ -246,7 +246,7 @@ test.describe('Config', () => {
 		await openConfig(page);
 		const row = page.locator('.row', { hasText: 'Claude' });
 		await row.locator('.summary').click();
-		await row.getByLabel('Env var name').fill('CADENCE_DEFINITELY_UNSET_KEY');
+		await row.getByLabel('Env var name').fill('context-reel_DEFINITELY_UNSET_KEY');
 		await row.locator('.actions button', { hasText: 'Probe' }).click();
 		await expect(row.locator('.pill.error')).toBeVisible();
 	});
@@ -255,21 +255,21 @@ test.describe('Config', () => {
 // ── Editor spec ─────────────────────────────────────────────────────────────
 test.describe('Editor', () => {
 	async function typeDoc(page: Page, text: string): Promise<void> {
-		await page.locator('#cadence-editor').fill(text);
-		await page.locator('#cadence-editor').dispatchEvent('input');
+		await page.locator('#context-reel-editor').fill(text);
+		await page.locator('#context-reel-editor').dispatchEvent('input');
 	}
 
 	test('the doc survives a view swap', async ({ page }) => {
 		await typeDoc(page, '# survives the swap');
 		await tab(page, 'Chat').click();
 		await tab(page, 'Editor').click();
-		await expect(page.locator('#cadence-editor')).toHaveValue('# survives the swap');
+		await expect(page.locator('#context-reel-editor')).toHaveValue('# survives the swap');
 	});
 
 	test('a selection reaches the chat and the workspace shows the chat', async ({ page }) => {
 		await typeDoc(page, 'alpha beta gamma');
 		await page.evaluate(() => {
-			const ta = document.querySelector('#cadence-editor') as HTMLTextAreaElement;
+			const ta = document.querySelector('#context-reel-editor') as HTMLTextAreaElement;
 			ta.focus();
 			ta.setSelectionRange(0, 5); // "alpha"
 		});
@@ -281,7 +281,7 @@ test.describe('Editor', () => {
 	test('the whole doc zaps when nothing is selected', async ({ page }) => {
 		await typeDoc(page, 'the entire document');
 		await page.evaluate(() => {
-			const ta = document.querySelector('#cadence-editor') as HTMLTextAreaElement;
+			const ta = document.querySelector('#context-reel-editor') as HTMLTextAreaElement;
 			ta.focus();
 			ta.setSelectionRange(4, 4); // collapsed: nothing selected
 		});
@@ -291,7 +291,7 @@ test.describe('Editor', () => {
 
 	test('a rail pick loads the doc and the preview repaints to match', async ({ page }) => {
 		await page.locator('.rail button.pill', { hasText: 'welcome.md' }).click();
-		await expect(page.locator('#cadence-editor')).toHaveValue(/# ContextReel/);
+		await expect(page.locator('#context-reel-editor')).toHaveValue(/# ContextReel/);
 		await page.keyboard.press('Alt+Shift+R');
 		await expect(page.locator('.editor .preview')).toContainText('ContextReel');
 	});

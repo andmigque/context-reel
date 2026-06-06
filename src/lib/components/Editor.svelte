@@ -5,7 +5,7 @@
 
 	// The doc lives in local storage today (the spec's named "today" home);
 	// IndexedDB is the stated target for a later pass.
-	const STORAGE_KEY = 'cadence:editor:doc';
+	const STORAGE_KEY = 'context-reel:editor:doc';
 
 	let textarea!: HTMLTextAreaElement;
 	let previewing = $state(false);
@@ -85,20 +85,20 @@
 		// Enhance the native textarea in place (browser-only import).
 		const mod = await import('markdown-text-editor');
 		const MarkdownEditor = mod.default;
-		new MarkdownEditor('#cadence-editor', { mode: 'hybrid' });
+		new MarkdownEditor('#context-reel-editor', { mode: 'hybrid' });
 
 		// Repaint to reflect the restored value, then go live.
 		textarea.dispatchEvent(new Event('input', { bubbles: true }));
 		mounted = true;
 
-		window.addEventListener('cadence:to-editor', onToEditor);
-		window.addEventListener('cadence:command', onCommand);
+		window.addEventListener('context-reel:to-editor', onToEditor);
+		window.addEventListener('context-reel:command', onCommand);
 	});
 
 	onDestroy(() => {
 		if (typeof window === 'undefined') return;
-		window.removeEventListener('cadence:to-editor', onToEditor);
-		window.removeEventListener('cadence:command', onCommand);
+		window.removeEventListener('context-reel:to-editor', onToEditor);
+		window.removeEventListener('context-reel:command', onCommand);
 	});
 </script>
 
@@ -114,7 +114,7 @@
 	<div class="surface">
 		<!-- The host textarea. Its value is the document. -->
 		<textarea
-			id="cadence-editor"
+			id="context-reel-editor"
 			class="host"
 			bind:this={textarea}
 			hidden={previewing}

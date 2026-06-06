@@ -19,7 +19,7 @@ interface ContextReelDB extends DBSchema {
 	};
 }
 
-const DB_NAME = 'cadence';
+const DB_NAME = 'context-reel';
 const DB_VERSION = 1;
 
 let dbPromise: Promise<IDBPDatabase<ContextReelDB>> | undefined;

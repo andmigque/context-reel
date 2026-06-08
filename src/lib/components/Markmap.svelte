@@ -87,11 +87,16 @@
 		transformer = new lib.Transformer();
 		MarkmapClass = view.Markmap;
 
-		// Do not build here: the panel may be hidden, and a fit against a
-		// display:none (0x0) box yields NaN transforms and a mis-scaled tree. The
-		// show effect builds the map once the panel is visible — and it also runs
-		// on mount, so a markmap-default view would still paint.
 		window.addEventListener(ZAP_CHANNEL, onZap);
+
+		// Cover the race where the map was opened before this import resolved: the
+		// show effect fired with no library to draw with, and it will not fire
+		// again until the view changes. Build now if the map is the shown view.
+		// When it is hidden we skip it — a fit against a 0x0 panel produces NaN;
+		// the show effect will build it when the view is opened.
+		if (workspace.view === 'markmap') {
+			requestAnimationFrame(() => renderDoc(currentDoc()));
+		}
 	});
 
 	// MarkMap renders what's in the editor: when this becomes the shown view, the
@@ -115,30 +120,21 @@
 	});
 </script>
 
-<div class="markmap-root">
+<div class="h-full min-h-0">
 	<!-- Light DOM: markmap-view measures the SVG through d3 against the document,
 	     so a shadow root would wall it off and break sizing. Svelte renders to
-	     light DOM, so nothing extra is needed. -->
-	<svg bind:this={svg} id={svgId} class="markmap-svg" aria-label="Document mind map"></svg>
+	     light DOM, so nothing extra is needed.
+	     The markmap-svg class is retained only as the hook for the :global(.markmap)
+	     palette override below; the visual box is Tailwind utilities. -->
+	<svg
+		bind:this={svg}
+		id={svgId}
+		class="markmap-svg w-full h-full bg-bg border border-line rounded-card"
+		aria-label="Document mind map"
+	></svg>
 </div>
 
 <style>
-	/* Height is fluid — the panel owns the size, never a frozen px box. */
-	.markmap-root {
-		height: 100%;
-		min-height: 0;
-	}
-
-	/* The SVG fills the root so the first fit has a box to measure and the tree
-	   pans inside it instead of growing the page. */
-	.markmap-svg {
-		width: 100%;
-		height: 100%;
-		background: var(--bg);
-		border: 1px solid var(--line);
-		border-radius: var(--radius);
-	}
-
 	/* markmap tokenizes its palette as CSS variables on the .markmap class it adds
 	   to the SVG; its default text color is near-invisible on the dark panel. The
 	   svg carries both markmap-svg and markmap, so this two-class selector outweighs

@@ -48,4 +48,13 @@ test.describe('Chord Rail', () => {
 		expect(widths.view).toBeGreaterThan(widths.zap); // middle takes the rest
 		expect(widths.overflow).toBe(false);
 	});
+
+	test('a jump focuses the view it shows, not just reveals it', async ({ page }) => {
+		// A jump that switches the view but leaves focus behind reads as "nothing
+		// happened". The chord must land focus in the new view.
+		await page.keyboard.press('Alt+Shift+C');
+		await expect(page.locator('textarea.input')).toBeFocused(); // chat composer
+		await page.keyboard.press('Alt+Shift+E');
+		await expect(page.locator('#context-reel-editor')).toBeFocused(); // editor caret
+	});
 });

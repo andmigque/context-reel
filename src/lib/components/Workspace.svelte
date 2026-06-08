@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { workspace } from '$lib/stores/workspace.svelte';
 	import { installChordListener } from '$lib/chords/keymap';
 	import { CHORD_BINDINGS } from '$lib/chords/registry';
-	import type { ChordCommand } from '$lib/types';
+	import type { ChordCommand, ViewName } from '$lib/types';
 	import Navbar from './Navbar.svelte';
 	import ZapRail from './ZapRail.svelte';
 	import ChordRail from './ChordRail.svelte';
@@ -28,6 +28,9 @@
 				break;
 			case 'workspace.openZapDrawer':
 				workspace.toggleDrawer();
+				if (workspace.drawerOpen) {
+					void focusDrawer();
+				}
 				break;
 			case 'workspace.cheatSheet':
 				workspace.toggleCheatSheet();
@@ -43,8 +46,63 @@
 		}
 	}
 
+	// A view switch must land focus inside the new view, not just show it — a jump
+	// that leaves focus behind reads as "nothing happened". Editor and chat focus
+	// their text input; the rest focus the shown panel so the next key goes there.
+	const FOCUS_WITHIN: Partial<Record<ViewName, string>> = {
+		editor: '#context-reel-editor',
+		chat: 'textarea.input'
+	};
+
+	async function focusView(view: ViewName): Promise<void> {
+		await tick(); // wait for the target slot to un-hide
+		const selector = FOCUS_WITHIN[view];
+		const preferred = selector ? document.querySelector(selector) : undefined;
+		const panel = document.querySelector('main.view .slot:not([hidden])');
+		const target = preferred ?? panel;
+		if (target instanceof HTMLElement) target.focus();
+	}
+
+	// Opening the doc drawer lands focus on its first doc, so it can be browsed
+	// with the keyboard alone — arrow/tab then move between the docs.
+	async function focusDrawer(): Promise<void> {
+		await tick();
+		const pill = document.querySelector('aside[aria-label="Doc drawer"] .pill');
+		if (pill instanceof HTMLElement) pill.focus();
+	}
+
+	// Focus follows the shown view on every change after the first paint, so a
+	// chord jump or a tab click puts the caret where the user expects. The first
+	// run is the initial mount; we let the page settle without grabbing focus.
+	let viewSettled = false;
+	$effect(() => {
+		const view = workspace.view;
+		if (!viewSettled) {
+			viewSettled = true;
+			return;
+		}
+		void focusView(view);
+	});
+
+	// Escape closes whatever overlay is open, so a modal never traps a
+	// keyboard-only user. The cheat sheet takes priority over the doc drawer.
+	function handleEscape(event: KeyboardEvent): void {
+		if (event.key !== 'Escape') {
+			return;
+		}
+		if (workspace.cheatOpen) {
+			workspace.toggleCheatSheet();
+			return;
+		}
+		if (workspace.drawerOpen) {
+			workspace.drawerOpen = false;
+		}
+	}
+
 	onMount(() => installChordListener(run));
 </script>
+
+<svelte:window onkeydown={handleEscape} />
 
 <div class="workspace">
 	<Navbar />
@@ -53,10 +111,10 @@
 	<main class="view" aria-label="Active view">
 		<!-- Every view stays mounted; we toggle which is shown so a doc, a stream,
 		     the roster, and the mind map all survive a view swap with no reload. -->
-		<div class="slot" hidden={workspace.view !== 'editor'}><Editor /></div>
-		<div class="slot" hidden={workspace.view !== 'chat'}><Chat /></div>
-		<div class="slot" hidden={workspace.view !== 'config'}><Config /></div>
-		<div class="slot" hidden={workspace.view !== 'markmap'}><Markmap /></div>
+		<div class="slot" tabindex="-1" hidden={workspace.view !== 'editor'}><Editor /></div>
+		<div class="slot" tabindex="-1" hidden={workspace.view !== 'chat'}><Chat /></div>
+		<div class="slot" tabindex="-1" hidden={workspace.view !== 'config'}><Config /></div>
+		<div class="slot" tabindex="-1" hidden={workspace.view !== 'markmap'}><Markmap /></div>
 	</main>
 
 	<ChordRail />
@@ -64,15 +122,25 @@
 
 {#if workspace.cheatOpen}
 	<button
-		class="scrim"
+		class="fixed inset-0 bg-black/50 border-0 z-30"
 		aria-label="Close cheat sheet"
 		onclick={() => workspace.toggleCheatSheet()}
 	></button>
-	<div class="cheat" role="dialog" aria-label="Chord cheat sheet">
-		<h2>Chords</h2>
-		<ul>
+	<div
+		class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[31] bg-bg-raise border border-line rounded-card px-6 py-[1.2rem] min-w-[22rem] shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
+		role="dialog"
+		aria-label="Chord cheat sheet"
+	>
+		<h2 class="mt-0 mb-[0.8rem] text-[0.8rem] uppercase tracking-[0.14em] text-bone-dim">Chords</h2>
+		<ul class="list-none m-0 p-0 flex flex-col gap-2">
 			{#each CHORD_BINDINGS as b (b.command)}
-				<li><kbd>{b.chord.replace('ArrowLeft', '←').replace('ArrowRight', '→')}</kbd> {b.label}</li>
+				<li class="flex items-center gap-[0.7rem] text-[0.88rem]">
+					<kbd
+						class="font-mono text-[0.74rem] bg-bg-sink border border-b-2 border-line rounded-[4px] px-[0.45rem] py-[0.15rem] min-w-[6.5rem] text-center"
+						>{b.chord.replace('ArrowLeft', '←').replace('ArrowRight', '→')}</kbd
+					>
+					{b.label}
+				</li>
 			{/each}
 		</ul>
 	</div>
@@ -109,63 +177,15 @@
 	.slot[hidden] {
 		display: none;
 	}
+	/* The panel is a programmatic focus target (tabindex -1) for views with no
+	   single input; suppress the ring so a jump does not flash a border. */
+	.slot:focus {
+		outline: none;
+	}
 
 	@media (max-width: 860px) {
 		.workspace {
 			grid-template-columns: 0 minmax(0, 1fr) 0;
 		}
-	}
-
-	.scrim {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.5);
-		border: 0;
-		z-index: 30;
-	}
-	.cheat {
-		position: fixed;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		z-index: 31;
-		background: var(--bg-raise);
-		border: 1px solid var(--line);
-		border-radius: var(--radius);
-		padding: 1.2rem 1.5rem;
-		min-width: 22rem;
-		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-	}
-	.cheat h2 {
-		margin: 0 0 0.8rem;
-		font-size: 0.8rem;
-		text-transform: uppercase;
-		letter-spacing: 0.14em;
-		color: var(--bone-dim);
-	}
-	.cheat ul {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-	.cheat li {
-		display: flex;
-		align-items: center;
-		gap: 0.7rem;
-		font-size: 0.88rem;
-	}
-	.cheat kbd {
-		font-family: var(--mono);
-		font-size: 0.74rem;
-		background: var(--bg-sink);
-		border: 1px solid var(--line);
-		border-bottom-width: 2px;
-		border-radius: 4px;
-		padding: 0.15rem 0.45rem;
-		min-width: 6.5rem;
-		text-align: center;
 	}
 </style>

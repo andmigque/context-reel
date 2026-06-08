@@ -12,6 +12,28 @@ async function showMap(page: Page, workspace: Workspace): Promise<void> {
 }
 
 /**
+ * The map's fit health: whether the rendered tree sits inside the SVG box and
+ * whether its transform is finite. markmap fits with a ~500ms transition, so
+ * callers poll this until it settles instead of measuring once mid-animation.
+ */
+function fitState(page: Page): Promise<{ hasNaN: boolean; fitsHoriz: boolean; fitsVert: boolean }> {
+	return page.evaluate((sel) => {
+		const svg = document.querySelector(sel) as SVGSVGElement;
+		const g = svg.querySelector('g') as SVGGElement;
+		const s = svg.getBoundingClientRect();
+		const c = g.getBoundingClientRect();
+		const transform = g.getAttribute('transform') ?? '';
+		return {
+			hasNaN: transform.includes('NaN'),
+			fitsHoriz: c.left >= s.left - 1 && c.right <= s.right + 1,
+			fitsVert: c.top >= s.top - 1 && c.bottom <= s.bottom + 1
+		};
+	}, MAP);
+}
+
+const FITTED = { hasNaN: false, fitsHoriz: true, fitsVert: true };
+
+/**
  * MarkMap spec. The map renders what is in the editor: it tracks the zap
  * channel, survives a view swap, and shows a placeholder when the document is
  * empty.
@@ -22,22 +44,11 @@ test.describe('MarkMap', () => {
 		await showMap(page, workspace);
 		// a node for the top heading
 		await expect(page.locator(MAP).getByText('Top Heading')).toBeVisible();
-		// the tree is fit within the panel: the rendered content sits inside the
-		// SVG box and nothing overflows the page
-		const fit = await page.evaluate((sel) => {
-			const svg = document.querySelector(sel) as SVGSVGElement;
-			const content = svg.querySelector('g') as SVGGElement; // markmap's viewport group
-			const s = svg.getBoundingClientRect();
-			const c = content.getBoundingClientRect();
-			return {
-				fitsWidth: c.left >= s.left - 1 && c.right <= s.right + 1,
-				fitsHeight: c.top >= s.top - 1 && c.bottom <= s.bottom + 1,
-				overflow: document.body.scrollWidth > document.body.clientWidth
-			};
-		}, MAP);
-		expect(fit.fitsWidth).toBe(true);
-		expect(fit.fitsHeight).toBe(true);
-		expect(fit.overflow).toBe(false);
+		// the tree fits the panel once the ~500ms fit transition settles, and the
+		// page itself never overflows
+		await expect.poll(() => fitState(page), { timeout: 6000 }).toEqual(FITTED);
+		const overflow = await page.evaluate(() => document.body.scrollWidth > document.body.clientWidth);
+		expect(overflow).toBe(false);
 	});
 
 	test('the map tracks the writing', async ({ page, workspace }) => {
@@ -76,20 +87,7 @@ test.describe('MarkMap', () => {
 		// box, producing translate(NaN,NaN) and a tree shoved off the right edge.
 		// Building on show, after a layout frame, keeps it inside the panel.
 		await showMap(page, workspace);
-		const health = await page.evaluate((sel) => {
-			const svg = document.querySelector(sel) as SVGSVGElement;
-			const g = svg.querySelector('g') as SVGGElement;
-			const s = svg.getBoundingClientRect();
-			const c = g.getBoundingClientRect();
-			return {
-				transform: g.getAttribute('transform') ?? '',
-				fitsHoriz: c.left >= s.left - 1 && c.right <= s.right + 1,
-				fitsVert: c.top >= s.top - 1 && c.bottom <= s.bottom + 1
-			};
-		}, MAP);
-		expect(health.transform).not.toContain('NaN');
-		expect(health.fitsHoriz).toBe(true);
-		expect(health.fitsVert).toBe(true);
+		await expect.poll(() => fitState(page), { timeout: 6000 }).toEqual(FITTED);
 	});
 
 	test('successive documents each fit the panel', async ({ page, workspace }) => {
@@ -109,18 +107,7 @@ test.describe('MarkMap', () => {
 			}, doc.md);
 			// Wait for the new tree to paint before measuring — no fixed sleep.
 			await expect(page.locator(MAP).getByText(doc.heading).first()).toBeVisible();
-			const health = await page.evaluate((sel) => {
-				const svg = document.querySelector(sel) as SVGSVGElement;
-				const g = svg.querySelector('g') as SVGGElement;
-				const s = svg.getBoundingClientRect();
-				const c = g.getBoundingClientRect();
-				return {
-					transform: g.getAttribute('transform') ?? '',
-					fitsHoriz: c.left >= s.left - 1 && c.right <= s.right + 1
-				};
-			}, MAP);
-			expect(health.transform).not.toContain('NaN');
-			expect(health.fitsHoriz).toBe(true);
+			await expect.poll(() => fitState(page), { timeout: 6000 }).toEqual(FITTED);
 		}
 	});
 });

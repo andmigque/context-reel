@@ -27,67 +27,24 @@
 	}
 </script>
 
-<aside class="rail" aria-label="Chord set">
-	<h2 class="title">Chords</h2>
-	<ul class="list">
+<aside
+	class="[grid-area:chord] border-l border-line bg-bg-sink px-[0.8rem] py-[0.9rem] overflow-y-auto min-h-0"
+	aria-label="Chord set"
+>
+	<h2 class="mt-0 mb-[0.8rem] text-[0.72rem] uppercase tracking-[0.14em] text-bone-dim">Chords</h2>
+	<ul class="list-none m-0 p-0 flex flex-col gap-[0.7rem]">
 		{#each bindings as b (b.command)}
-			<li class="row">
-				<span class="label">{b.label}</span>
-				<span class="chord">
+			<li class="flex flex-col gap-[0.3rem]">
+				<span class="text-[0.82rem] text-bone">{b.label}</span>
+				<span class="flex gap-[0.2rem]">
 					{#each keys(b.chord) as k (k)}
-						<kbd>{k}</kbd>
+						<kbd
+							class="font-mono text-[0.68rem] bg-bg-raise border border-b-2 border-line rounded-[4px] px-[0.35rem] py-[0.1rem] text-bone-dim"
+							>{k}</kbd
+						>
 					{/each}
 				</span>
 			</li>
 		{/each}
 	</ul>
 </aside>
-
-<style>
-	.rail {
-		grid-area: chord;
-		border-left: 1px solid var(--line);
-		background: var(--bg-sink);
-		padding: 0.9rem 0.8rem;
-		overflow-y: auto;
-		min-height: 0;
-	}
-	.title {
-		margin: 0 0 0.8rem;
-		font-size: 0.72rem;
-		text-transform: uppercase;
-		letter-spacing: 0.14em;
-		color: var(--bone-dim);
-	}
-	.list {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.7rem;
-	}
-	.row {
-		display: flex;
-		flex-direction: column;
-		gap: 0.3rem;
-	}
-	.label {
-		font-size: 0.82rem;
-		color: var(--bone);
-	}
-	.chord {
-		display: flex;
-		gap: 0.2rem;
-	}
-	kbd {
-		font-family: var(--mono);
-		font-size: 0.68rem;
-		background: var(--bg-raise);
-		border: 1px solid var(--line);
-		border-bottom-width: 2px;
-		border-radius: 4px;
-		padding: 0.1rem 0.35rem;
-		color: var(--bone-dim);
-	}
-</style>

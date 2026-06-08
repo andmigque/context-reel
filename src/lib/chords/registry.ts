@@ -1,16 +1,17 @@
+//// # registry
+//// The chord set — the one source of truth, as data, never a literal scattered through a template
+//// (ChordRail spec). The /api/chords endpoint is the seam that serves these rows; the client keymap
+//// resolves a keystroke against the same set. Command identity is separate from the chord string, so a
+//// rebind swaps the keys and leaves the command alone. Every chord is Alt+Shift+<key> — a register the
+//// browser and its devtools leave alone, so a workspace chord never collides with a claimed shortcut.
+////
+//// ## Imports
 import type { ChordBinding } from '$lib/types';
 
-/**
- * The chord set — the one source of truth, as data, never a literal scattered
- * through a template (ChordRail spec). The /api/chords endpoint is the seam that
- * serves these rows; the client keymap resolves a keystroke against the same set.
- *
- * Command identity is separate from the chord string, so a rebind swaps the keys
- * and leaves the command alone.
- *
- * Every chord is Alt+Shift+<key> — a register the browser and its devtools leave
- * alone, so a workspace chord never collides with a claimed shortcut.
- */
+//// ## Constants
+
+//// ### CHORD_BINDINGS
+//// The canonical chord-to-command bindings.
 export const CHORD_BINDINGS: ChordBinding[] = [
 	{ command: 'jump.editor', chord: 'Alt+Shift+E', label: 'Jump to the editor' },
 	{ command: 'jump.chat', chord: 'Alt+Shift+C', label: 'Jump to the chat' },

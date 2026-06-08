@@ -184,205 +184,139 @@
 	});
 </script>
 
-<div class="chat">
-	<div class="roster" role="tablist" aria-label="Selected model">
+<div class="flex flex-col h-full min-h-0">
+	<div
+		class="flex flex-wrap gap-[0.4rem] px-[0.8rem] py-[0.6rem] border-b border-line bg-bg-sink"
+		role="tablist"
+		aria-label="Selected model"
+	>
 		{#each selectable as model, i (model.id)}
 			<button
-				class="chip"
+				class="flex items-center gap-[0.4rem] bg-bg-raise border border-line rounded-full px-[0.7rem] py-[0.25rem] text-bone-dim text-[0.82rem] aria-selected:text-bone aria-selected:[border-color:var(--vc)]"
 				role="tab"
 				aria-selected={selected?.id === model.id}
 				style="--vc:{`var(--vendor-${model.vendor})`}"
 				title={`Alt+Shift+${i + 1}`}
 				onclick={() => config.setSelected(model.id)}
 			>
-				<span class="av" style="background:{`var(--vendor-${model.vendor})`}"></span>
+				<span class="w-[0.6rem] h-[0.6rem] rounded-full" style="background:{`var(--vendor-${model.vendor})`}"></span>
 				{model.display}
 			</button>
 		{/each}
 		{#if selectable.length === 0}
-			<span class="empty">No ready models. Add one in config (Alt+Shift+K).</span>
+			<span class="text-[0.82rem] text-bone-dim">No ready models. Add one in config (Alt+Shift+K).</span>
 		{/if}
 	</div>
 
-	<div class="thread" bind:this={threadEl} onscroll={onThreadScroll}>
+	<div
+		class="flex-1 min-h-0 overflow-y-auto px-[1.2rem] py-4 flex flex-col gap-4"
+		bind:this={threadEl}
+		onscroll={onThreadScroll}
+	>
 		{#each transcript.messages as msg (msg.id)}
-			<div class="turn {msg.role}" data-state={msg.state}>
-				<div class="meta">
-					<span class="who">{msg.role === 'user' ? 'you' : msg.vendor || 'assistant'}</span>
+			<div
+				class="flex flex-col gap-[0.35rem] max-w-[52rem] {msg.role === 'user'
+					? 'self-end items-end'
+					: ''}"
+			>
+				<div class="flex items-center gap-2 text-[0.72rem] text-bone-dim">
+					<span class="font-mono lowercase">{msg.role === 'user' ? 'you' : msg.vendor || 'assistant'}</span>
 					{#if msg.role === 'assistant' && msg.ttftMs > 0}
-						<span class="stat">ttft {msg.ttftMs}ms · {msg.tokenCount} tok</span>
+						<span class="font-mono text-green">ttft {msg.ttftMs}ms · {msg.tokenCount} tok</span>
 					{/if}
-					{#if msg.state === 'stopped'}<span class="badge stop">stopped</span>{/if}
-					{#if msg.state === 'error'}<span class="badge err">error</span>{/if}
+					{#if msg.state === 'stopped'}<span
+							class="font-mono text-[0.66rem] px-[0.4rem] py-[0.05rem] rounded-[4px] text-amber border border-amber"
+							>stopped</span
+						>{/if}
+					{#if msg.state === 'error'}<span
+							class="font-mono text-[0.66rem] px-[0.4rem] py-[0.05rem] rounded-[4px] text-red border border-red"
+							>error</span
+						>{/if}
 				</div>
 
 				{#if msg.role === 'assistant'}
-					<div class="bubble md">
+					<div
+						class="md rounded-card px-[0.95rem] py-[0.7rem] border bg-bg-raise {msg.state === 'error'
+							? 'border-red'
+							: 'border-line'}"
+					>
 						<!-- progressive markdown: rendered live as tokens land -->
 						{@html renderMarkdown(msg.text)}{#if msg.state === 'streaming'}<span
 								class="caret"
 								aria-hidden="true"></span>{/if}
 					</div>
 					{#if msg.state === 'streaming' && stillWorking}
-						<div class="working">still working… no token for {STILL_WORKING_MS / 1000}s</div>
+						<div class="text-[0.78rem] text-amber italic">
+							still working… no token for {STILL_WORKING_MS / 1000}s
+						</div>
 					{/if}
 					{#if msg.state === 'error'}
-						<div class="recovery">
-							<button onclick={() => void resend()}>Retry</button>
+						<div class="flex flex-wrap gap-[0.4rem]">
+							<button
+								class="bg-bg-raise border border-line rounded-card px-[0.7rem] py-[0.3rem] text-bone text-[0.8rem] hover:border-green hover:text-green"
+								onclick={() => void resend()}>Retry</button
+							>
 							{#each selectable.filter((model) => model.id !== selected?.id) as alt (alt.id)}
-								<button class="reroute" onclick={() => void resend(alt.id)}>Reroute → {alt.display}</button>
+								<button
+									class="bg-bg-raise border border-line rounded-card px-[0.7rem] py-[0.3rem] text-bone text-[0.8rem] hover:border-amber hover:text-amber"
+									onclick={() => void resend(alt.id)}>Reroute → {alt.display}</button
+								>
 							{/each}
 						</div>
 					{/if}
 				{:else}
-					<div class="bubble user-text">{msg.text}</div>
+					<div class="user-bubble rounded-card px-[0.95rem] py-[0.7rem] border whitespace-pre-wrap break-words">{msg.text}</div>
 				{/if}
 			</div>
 		{/each}
 
 		{#if transcript.messages.length === 0}
-			<div class="hello">
+			<div class="m-auto text-center text-bone">
 				<p>Ask a question and watch the answer form, token by token.</p>
-				<p class="dim">No blank pause. Ever.</p>
+				<p class="text-bone-dim font-mono">No blank pause. Ever.</p>
 			</div>
 		{/if}
 	</div>
 
 	<form
-		class="composer"
+		class="flex gap-[0.6rem] px-[0.8rem] py-[0.7rem] border-t border-line bg-bg-sink"
 		onsubmit={(e) => {
 			e.preventDefault();
 			send();
 		}}
 	>
 		<textarea
-			class="input"
+			class="flex-1 resize-none bg-bg border border-line rounded-card px-[0.75rem] py-[0.6rem] text-bone font-sans text-[0.92rem] leading-[1.45] focus:outline-none focus:border-green"
 			placeholder="Message the selected model (Enter sends, Shift+Enter adds a line)"
 			bind:value={composer}
 			onkeydown={onComposerKey}
 			rows="2"
 		></textarea>
 		{#if generating}
-			<button type="button" class="send stop" onclick={stop}>Stop</button>
+			<button
+				type="button"
+				class="self-stretch min-w-[5.5rem] border border-red bg-red text-white rounded-card font-semibold"
+				onclick={stop}>Stop</button
+			>
 		{:else}
-			<button type="submit" class="send" disabled={composer.trim().length === 0}>Send</button>
+			<button
+				type="submit"
+				class="self-stretch min-w-[5.5rem] border border-green bg-green text-bg-sink rounded-card font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+				disabled={composer.trim().length === 0}>Send</button
+			>
 		{/if}
 	</form>
 </div>
 
 <style>
-	.chat {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		min-height: 0;
-	}
-	.roster {
-		display: flex;
-		gap: 0.4rem;
-		padding: 0.6rem 0.8rem;
-		border-bottom: 1px solid var(--line);
-		background: var(--bg-sink);
-		flex-wrap: wrap;
-	}
-	.chip {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		background: var(--bg-raise);
-		border: 1px solid var(--line);
-		border-radius: 999px;
-		padding: 0.25rem 0.7rem;
-		color: var(--bone-dim);
-		font-size: 0.82rem;
-	}
-	.chip[aria-selected='true'] {
-		color: var(--bone);
-		border-color: var(--vc);
-	}
-	.av {
-		width: 0.6rem;
-		height: 0.6rem;
-		border-radius: 50%;
-	}
-	.empty {
-		font-size: 0.82rem;
-		color: var(--bone-dim);
-	}
-	.thread {
-		flex: 1;
-		min-height: 0;
-		overflow-y: auto;
-		padding: 1rem 1.2rem;
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-	.turn {
-		display: flex;
-		flex-direction: column;
-		gap: 0.35rem;
-		max-width: 52rem;
-	}
-	.turn.user {
-		align-self: flex-end;
-		align-items: flex-end;
-	}
-	.meta {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-size: 0.72rem;
-		color: var(--bone-dim);
-	}
-	.who {
-		font-family: var(--mono);
-		text-transform: lowercase;
-	}
-	.stat {
-		font-family: var(--mono);
-		color: var(--green);
-	}
-	.badge {
-		font-family: var(--mono);
-		font-size: 0.66rem;
-		padding: 0.05rem 0.4rem;
-		border-radius: 4px;
-	}
-	.badge.stop {
-		color: var(--amber);
-		border: 1px solid var(--amber);
-	}
-	.badge.err {
-		color: var(--red);
-		border: 1px solid var(--red);
-	}
-	.bubble {
-		border-radius: var(--radius);
-		padding: 0.7rem 0.95rem;
-		border: 1px solid var(--line);
-	}
-	.turn.assistant .bubble {
-		background: var(--bg-raise);
-	}
-	.turn.user .bubble {
-		background: color-mix(in srgb, var(--green) 14%, var(--bg-raise));
-		border-color: color-mix(in srgb, var(--green) 30%, var(--line));
-	}
-	.user-text {
-		white-space: pre-wrap;
-		word-break: break-word;
-	}
-	.turn[data-state='error'] .bubble {
-		border-color: var(--red);
-	}
+	/* Streaming caret — a blinking keyframe is clearest expressed as a CSS rule. */
 	.caret {
 		display: inline-block;
 		width: 0.55em;
 		height: 1.05em;
 		margin-left: 1px;
 		vertical-align: text-bottom;
-		background: var(--green);
+		background: var(--color-green);
 		animation: blink 1s steps(2, start) infinite;
 	}
 	@keyframes blink {
@@ -390,80 +324,12 @@
 			opacity: 0;
 		}
 	}
-	.working {
-		font-size: 0.78rem;
-		color: var(--amber);
-		font-style: italic;
-	}
-	.recovery {
-		display: flex;
-		gap: 0.4rem;
-		flex-wrap: wrap;
-	}
-	.recovery button {
-		background: var(--bg-raise);
-		border: 1px solid var(--line);
-		border-radius: var(--radius);
-		padding: 0.3rem 0.7rem;
-		color: var(--bone);
-		font-size: 0.8rem;
-	}
-	.recovery button:hover {
-		border-color: var(--green);
-		color: var(--green);
-	}
-	.recovery .reroute:hover {
-		border-color: var(--amber);
-		color: var(--amber);
-	}
-	.hello {
-		margin: auto;
-		text-align: center;
-		color: var(--bone);
-	}
-	.hello .dim {
-		color: var(--bone-dim);
-		font-family: var(--mono);
-	}
-	.composer {
-		display: flex;
-		gap: 0.6rem;
-		padding: 0.7rem 0.8rem;
-		border-top: 1px solid var(--line);
-		background: var(--bg-sink);
-	}
-	.input {
-		flex: 1;
-		resize: none;
-		background: var(--bg);
-		border: 1px solid var(--line);
-		border-radius: var(--radius);
-		padding: 0.6rem 0.75rem;
-		color: var(--bone);
-		font-family: var(--sans);
-		font-size: 0.92rem;
-		line-height: 1.45;
-	}
-	.input:focus {
-		outline: 0;
-		border-color: var(--green);
-	}
-	.send {
-		align-self: stretch;
-		min-width: 5.5rem;
-		border: 1px solid var(--green);
-		background: var(--green);
-		color: var(--bg-sink);
-		border-radius: var(--radius);
-		font-weight: 600;
-	}
-	.send:disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
-	}
-	.send.stop {
-		background: var(--red);
-		border-color: var(--red);
-		color: #fff;
+
+	/* User bubble tint blends green into the raised surface; color-mix reads
+	   clearer here than an arbitrary utility. The `border` utility sets the width;
+	   this rule supplies the blended color. */
+	.user-bubble {
+		background: color-mix(in srgb, var(--color-green) 14%, var(--color-bg-raise));
+		border-color: color-mix(in srgb, var(--color-green) 30%, var(--color-line));
 	}
 </style>

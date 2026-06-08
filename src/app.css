@@ -1,5 +1,39 @@
+@import 'tailwindcss';
+
 /* ContextReel theme tokens drawn from the spec palette.
-   green = live/ready, amber = working/active, red = stop/error, bone = text. */
+   green = live/ready, amber = working/active, red = stop/error, bone = text.
+   Exposed to Tailwind via @theme, so utilities like bg-bg, text-bone,
+   border-line, font-mono, and rounded-card are generated from these. */
+@theme {
+	--color-bg: #0e0f13;
+	--color-bg-raise: #16181f;
+	--color-bg-sink: #0a0b0e;
+	--color-line: #262a33;
+	--color-line-soft: #1d2027;
+	--color-bone: #d8d4cc;
+	--color-bone-dim: #8b8a85;
+	--color-green: #4ade80;
+	--color-amber: #ffaa24;
+	--color-red: #e62121;
+	--color-blue: #5b9dff;
+
+	--color-vendor-claude: #d97757;
+	--color-vendor-gemini: #5b9dff;
+	--color-vendor-gpt: #10a37f;
+	--color-vendor-grok: #c9cdd4;
+
+	--radius-card: 0.5rem;
+
+	/* The rails collapse below this width; exposed as the `rail` breakpoint so
+	   components use max-rail:/rail: variants instead of raw media queries. */
+	--breakpoint-rail: 53.75rem;
+
+	--font-mono: 'JetBrains Mono', 'Cascadia Code', ui-monospace, 'SF Mono', Menlo, monospace;
+	--font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* Legacy var(--*) names kept alive so components refactor one at a time
+   without the whole UI breaking. Remove a name only after its last use is gone. */
 :root {
 	--bg: #0e0f13;
 	--bg-raise: #16181f;

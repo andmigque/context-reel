@@ -1,7 +1,26 @@
+//// # stream
+//// The client transport for chat. Opens a streaming POST to /api/chat, frames NDJSON events off the
+//// wire, and dispatches each token as it lands. The whole transcript rides in the body; the server
+//// holds nothing between calls.
+////
+//// ## Imports
 import type { TranscriptTurn, Vendor } from '$lib/types';
 
-/** Everything the stateless server needs to answer one turn. */
+//// ## Types
+
+//// ### StreamRequest
+//// Everything the stateless server needs to answer one turn.
 export interface StreamRequest {
+	//// - `Vendor`: __vendor__
+	////     - *The model family to answer with.*
+	//// - `string`: __model__
+	////     - *Provider model id.*
+	//// - `string`: __envVarName__
+	////     - *Name of the env var holding the provider key.*
+	//// - `string`: __systemPrompt__
+	////     - *System prompt for this model.*
+	//// - `TranscriptTurn[]`: __turns__
+	////     - *The full conversation so far.*
 	vendor: Vendor;
 	model: string;
 	envVarName: string;
@@ -9,30 +28,50 @@ export interface StreamRequest {
 	turns: TranscriptTurn[];
 }
 
-/** One framed event off the wire (NDJSON, one object per line). */
+//// ### StreamEvent
+//// One framed event off the wire (NDJSON, one object per line).
 export type StreamEvent =
 	| { type: 'token'; value: string }
 	| { type: 'done' }
 	| { type: 'error'; message: string };
 
+//// ### StreamCallbacks
+//// The caller's handlers for token, done, and error events.
 export interface StreamCallbacks {
+	//// - `(value: string) => void`: __onToken__
+	////     - *Called with each token as it arrives.*
+	//// - `() => void`: __onDone__
+	////     - *Called once the stream completes.*
+	//// - `(message: string) => void`: __onError__
+	////     - *Called with an error message on failure.*
 	onToken: (value: string) => void;
 	onDone: () => void;
 	onError: (message: string) => void;
 }
 
+//// ### StreamHandle
+//// A handle to a running stream.
 export interface StreamHandle {
-	/** Cancel the stream. Keeps whatever tokens already arrived; not an error. */
+	//// - `() => void`: __abort__
+	////     - *Cancel the stream. Keeps whatever tokens already arrived; not an error.*
 	abort: () => void;
 }
 
-/**
- * Open a streaming POST to /api/chat and dispatch each token as it lands. The
- * whole transcript rides in the body; the server holds nothing between calls.
- *
- * An abort (Stop) resolves silently — it is a user action, not a failure.
- */
+//// ## Functions
+
+//// ### streamChat
+//// Open a streaming POST to /api/chat and dispatch each token as it lands. The whole transcript rides
+//// in the body; the server holds nothing between calls. An abort (Stop) resolves silently — it is a
+//// user action, not a failure.
 export function streamChat(request: StreamRequest, cb: StreamCallbacks): StreamHandle {
+	//// **Parameters**
+	//// - `StreamRequest`: __request__
+	////     - *The model and transcript to answer.*
+	//// - `StreamCallbacks`: __cb__
+	////     - *Token, done, and error handlers.*
+	//// **Returns**
+	//// - `StreamHandle`
+	////     - *A handle whose `abort()` cancels the stream.*
 	const controller = new AbortController();
 
 	(async () => {
@@ -70,7 +109,7 @@ export function streamChat(request: StreamRequest, cb: StreamCallbacks): StreamH
 				}
 			}
 		} catch (err) {
-			if (controller.signal.aborted) return; // Stop, not a defect.
+			if (controller.signal.aborted) return; //// Stop, not a defect.
 			cb.onError(err instanceof Error ? err.message : 'stream error');
 		}
 	})();

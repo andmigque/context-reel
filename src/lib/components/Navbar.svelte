@@ -10,16 +10,22 @@
 	];
 </script>
 
-<nav class="navbar" aria-label="Workspace views">
-	<span class="brand">
-		<span class="dot" aria-hidden="true"></span>
+<nav
+	class="[grid-area:nav] flex items-center gap-4 px-4 bg-bg-sink border-b border-line"
+	aria-label="Workspace views"
+>
+	<span class="flex items-center gap-2 font-semibold tracking-[0.02em] text-bone">
+		<span
+			class="w-[0.6rem] h-[0.6rem] rounded-full bg-amber shadow-[0_0_8px_var(--color-amber)]"
+			aria-hidden="true"
+		></span>
 		ContextReel
 	</span>
 
-	<div class="tabs" role="tablist">
+	<div class="flex gap-1 ml-2" role="tablist">
 		{#each tabs as tab (tab.view)}
 			<button
-				class="tab"
+				class="bg-transparent border border-transparent rounded-card px-[0.8rem] py-[0.35rem] text-bone-dim transition-colors hover:text-bone hover:bg-bg-raise aria-selected:text-bg-sink aria-selected:bg-green aria-selected:border-green aria-selected:font-semibold"
 				role="tab"
 				aria-selected={workspace.view === tab.view}
 				title={tab.chord}
@@ -30,70 +36,11 @@
 		{/each}
 	</div>
 
-	<button class="cheat" title="Alt+Shift+→" onclick={() => workspace.toggleCheatSheet()}>
+	<button
+		class="ml-auto bg-transparent border border-line rounded-card px-[0.7rem] py-[0.3rem] text-bone-dim text-[0.85rem] hover:text-amber hover:border-amber"
+		title="Alt+Shift+→"
+		onclick={() => workspace.toggleCheatSheet()}
+	>
 		chords
 	</button>
 </nav>
-
-<style>
-	.navbar {
-		grid-area: nav;
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-		padding: 0 1rem;
-		background: var(--bg-sink);
-		border-bottom: 1px solid var(--line);
-	}
-	.brand {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-weight: 600;
-		letter-spacing: 0.02em;
-		color: var(--bone);
-	}
-	.dot {
-		width: 0.6rem;
-		height: 0.6rem;
-		border-radius: 50%;
-		background: var(--amber);
-		box-shadow: 0 0 8px var(--amber);
-	}
-	.tabs {
-		display: flex;
-		gap: 0.25rem;
-		margin-left: 0.5rem;
-	}
-	.tab {
-		background: transparent;
-		border: 1px solid transparent;
-		border-radius: var(--radius);
-		padding: 0.35rem 0.8rem;
-		color: var(--bone-dim);
-		transition: color 0.12s, background 0.12s, border-color 0.12s;
-	}
-	.tab:hover {
-		color: var(--bone);
-		background: var(--bg-raise);
-	}
-	.tab[aria-selected='true'] {
-		color: var(--bg-sink);
-		background: var(--green);
-		border-color: var(--green);
-		font-weight: 600;
-	}
-	.cheat {
-		margin-left: auto;
-		background: transparent;
-		border: 1px solid var(--line);
-		border-radius: var(--radius);
-		padding: 0.3rem 0.7rem;
-		color: var(--bone-dim);
-		font-size: 0.85rem;
-	}
-	.cheat:hover {
-		color: var(--amber);
-		border-color: var(--amber);
-	}
-</style>

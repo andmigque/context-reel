@@ -1,15 +1,27 @@
-/** A markdown doc the zap rail can load into the editor. */
+//// # docs
+//// The sample doc set the zap rail can load into the editor.
+////
+//// ## Types
+
+//// ### Doc
+//// A markdown doc the zap rail can load into the editor.
 export interface Doc {
+	//// - `string`: __id__
+	////     - *Stable identifier for the doc.*
 	id: string;
+	//// - `string`: __title__
+	////     - *Display title, e.g. "welcome.md".*
 	title: string;
+	//// - `string`: __text__
+	////     - *The markdown body.*
 	text: string;
 }
 
-/**
- * Stand-in doc set for the zap rail. In the full workspace these come from the
- * doc tree, paged as you scroll; here they seed the in-zap so a pill click has
- * something real to load.
- */
+//// ## Constants
+
+//// ### SAMPLE_DOCS
+//// Stand-in doc set for the zap rail. In the full workspace these come from the doc tree, paged as you
+//// scroll; here they seed the in-zap so a pill click has something real to load.
 export const SAMPLE_DOCS: Doc[] = [
 	{
 		id: 'welcome',

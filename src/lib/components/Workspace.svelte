@@ -28,9 +28,8 @@
 				break;
 			case 'workspace.openZapDrawer':
 				workspace.toggleDrawer();
-				if (workspace.drawerOpen) {
-					void focusDrawer();
-				}
+				if (workspace.drawerOpen) void focusDrawer();
+				else void focusView(workspace.view);
 				break;
 			case 'workspace.cheatSheet':
 				workspace.toggleCheatSheet();
@@ -67,8 +66,9 @@
 	// with the keyboard alone — arrow/tab then move between the docs.
 	async function focusDrawer(): Promise<void> {
 		await tick();
-		const pill = document.querySelector('aside[aria-label="Doc drawer"] .pill');
-		if (pill instanceof HTMLElement) pill.focus();
+		const root = document.querySelector('aside[aria-label="ZapRail"]');
+		const target = root?.querySelector('.doc[data-selected="true"]') ?? root?.querySelector('.doc');
+		if (target instanceof HTMLElement) target.focus();
 	}
 
 	// Focus follows the shown view on every change after the first paint, so a
@@ -96,15 +96,26 @@
 		}
 		if (workspace.drawerOpen) {
 			workspace.drawerOpen = false;
+			void focusView(workspace.view);
 		}
 	}
 
-	onMount(() => installChordListener(run));
+	// The ZapRail close button returns focus to the middle view through this channel,
+	// so the close path is shared with the drawer chord and Escape.
+	onMount(() => {
+		const teardown = installChordListener(run);
+		const refocus = (): void => void focusView(workspace.view);
+		window.addEventListener('context-reel:focus-view', refocus);
+		return () => {
+			teardown();
+			window.removeEventListener('context-reel:focus-view', refocus);
+		};
+	});
 </script>
 
 <svelte:window onkeydown={handleEscape} />
 
-<div class="workspace">
+<div class="workspace" data-rail-open={workspace.drawerOpen}>
 	<Navbar />
 	<ZapRail />
 
@@ -152,7 +163,7 @@
 		grid-template-rows: var(--navbar-h) 1fr;
 		/* minmax(0, 1fr) gives the middle track min-width:0 so a wide child
 		   cannot stretch it past one fraction. Rails hold fixed widths. */
-		grid-template-columns: var(--rail) minmax(0, 1fr) var(--rail);
+		grid-template-columns: var(--rail-closed) minmax(0, 1fr) var(--rail);
 		grid-template-areas:
 			'nav nav nav'
 			'zap view chord';
@@ -183,9 +194,16 @@
 		outline: none;
 	}
 
+	/* Open widens the zap rail from the thin track to the full panel. */
+	.workspace[data-rail-open='true'] {
+		grid-template-columns: var(--rail) minmax(0, 1fr) var(--rail);
+	}
+
 	@media (max-width: 860px) {
-		.workspace {
-			grid-template-columns: 0 minmax(0, 1fr) 0;
+		/* The zap rail stays a thin track; the open panel overlays via position: fixed. */
+		.workspace,
+		.workspace[data-rail-open='true'] {
+			grid-template-columns: var(--rail-closed) minmax(0, 1fr) 0;
 		}
 	}
 </style>

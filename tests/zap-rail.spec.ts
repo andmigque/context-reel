@@ -126,4 +126,35 @@ test.describe('ZapRail', () => {
 		await page.locator('.doc').filter({ hasText: 'mock-34.md' }).scrollIntoViewIfNeeded();
 		await expect(page.locator('.doc').filter({ hasText: 'mock-35.md' })).toBeVisible();
 	});
+
+	test('loading a doc marks it selected', async ({ page }) => {
+		await boot(page);
+		await page.keyboard.press('Alt+Shift+ArrowLeft');
+		const first = page.locator('.doc').first();
+		await first.click();
+		await expect(first).toHaveAttribute('data-selected', 'true');
+	});
+
+	test('a page appended below keeps focus on the landed doc', async ({ page }) => {
+		await boot(page);
+		const rows = (count: number, start: number) =>
+			Array.from({ length: count }, (_, i) => ({
+				id: `m${start + i}`,
+				title: `mock-${start + i}.md`,
+				path: 'mock'
+			}));
+		await page.route(/\/api\/docs\?page=1$/, (route) =>
+			route.fulfill({ json: { page: 1, hasMore: true, groups: [{ path: 'mock', docs: rows(35, 0) }] } })
+		);
+		await page.route(/\/api\/docs\?page=2$/, (route) =>
+			route.fulfill({ json: { page: 2, hasMore: false, groups: [{ path: 'mock', docs: rows(6, 35) }] } })
+		);
+
+		await page.keyboard.press('Alt+Shift+ArrowLeft');
+		const landed = page.locator('.doc').filter({ hasText: 'mock-0.md' });
+		await expect(landed).toBeFocused();
+		await page.locator('.doc').filter({ hasText: 'mock-34.md' }).scrollIntoViewIfNeeded();
+		await expect(page.locator('.doc').filter({ hasText: 'mock-35.md' })).toBeVisible();
+		await expect(landed).toBeFocused(); // the appended page did not steal focus
+	});
 });

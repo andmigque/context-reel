@@ -1,4 +1,4 @@
-# context-reel ZapRail Spec
+# Zap Rail Design Doc
 
 The ZapRail. One rail, every doc, loaded into the editor.
 

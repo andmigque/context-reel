@@ -6,7 +6,7 @@
 		{ view: 'editor', label: 'Editor', chord: 'Alt+Shift+E' },
 		{ view: 'chat', label: 'Chat', chord: 'Alt+Shift+C' },
 		{ view: 'config', label: 'Config', chord: 'Alt+Shift+K' },
-		{ view: 'markmap', label: 'MarkMap', chord: 'Alt+Shift+M' }
+		{ view: 'markmap', label: 'Mark Map', chord: 'Alt+Shift+M' }
 	];
 </script>
 
@@ -19,7 +19,7 @@
 			class="w-[0.6rem] h-[0.6rem] rounded-full bg-amber shadow-[0_0_8px_var(--color-amber)]"
 			aria-hidden="true"
 		></span>
-		ContextReel
+		Context Reel
 	</span>
 
 	<div class="flex gap-1 ml-2" role="tablist">
@@ -41,6 +41,6 @@
 		title="Alt+Shift+→"
 		onclick={() => workspace.toggleCheatSheet()}
 	>
-		chords
+		Chords
 	</button>
 </nav>

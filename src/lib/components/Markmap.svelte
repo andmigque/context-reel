@@ -13,7 +13,7 @@
 	// Shown when no document has been written yet, so the empty state still
 	// paints a map instead of a blank panel.
 	const PLACEHOLDER =
-		'# ContextReel\n\n## Write in the editor\n\n- The mind map renders your document\n- Headings and bullets become nodes\n- Click a node to fold it';
+		'# Context Reel\n\n## Write in the editor\n\n- The mark map renders your document\n- Headings and bullets become nodes\n- Click a node to fold it';
 
 	// A unique id per instance so a re-mount never collides with a stale target.
 	// A module counter is deterministic across SSR and hydration; there is only
@@ -130,7 +130,7 @@
 		bind:this={svg}
 		id={svgId}
 		class="markmap-svg w-full h-full bg-bg border border-line rounded-card"
-		aria-label="Document mind map"
+		aria-label="Document mark map"
 	></svg>
 </div>
 

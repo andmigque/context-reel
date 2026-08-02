@@ -57,22 +57,22 @@ test.describe('ZapRail', () => {
 	test('Alt+Shift+ArrowLeft opens the ZapRail and lands focus on a doc', async ({ page }) => {
 		await boot(page);
 		await page.keyboard.press('Alt+Shift+ArrowLeft');
-		await expect(page.locator('aside[aria-label="ZapRail"]')).toBeVisible();
+		await expect(page.locator('aside[aria-label="Zap Rail"]')).toBeVisible();
 		await expect(page.locator('.doc').first()).toBeFocused();
 	});
 
 	test('closed, the ZapRail is a thin track that reopens', async ({ page }) => {
 		await boot(page);
-		await expect(page.locator('button[aria-label="Open ZapRail"]')).toBeVisible();
-		await expect(page.locator('aside[aria-label="ZapRail"]')).toHaveCount(0);
+		await expect(page.locator('button[aria-label="Open Zap Rail"]')).toBeVisible();
+		await expect(page.locator('aside[aria-label="Zap Rail"]')).toHaveCount(0);
 	});
 
 	test('the chord closes the ZapRail and returns focus to the editor', async ({ page }) => {
 		await boot(page);
 		await page.keyboard.press('Alt+Shift+ArrowLeft');
-		await expect(page.locator('aside[aria-label="ZapRail"]')).toBeVisible();
+		await expect(page.locator('aside[aria-label="Zap Rail"]')).toBeVisible();
 		await page.keyboard.press('Alt+Shift+ArrowLeft');
-		await expect(page.locator('aside[aria-label="ZapRail"]')).toHaveCount(0);
+		await expect(page.locator('aside[aria-label="Zap Rail"]')).toHaveCount(0);
 		await expect(page.locator('#context-reel-editor')).toBeFocused();
 	});
 
@@ -81,7 +81,7 @@ test.describe('ZapRail', () => {
 	test('the open ZapRail renders disk docs grouped by source path', async ({ page }) => {
 		await boot(page);
 		await page.keyboard.press('Alt+Shift+ArrowLeft');
-		const heads = page.locator('aside[aria-label="ZapRail"] .group-head');
+		const heads = page.locator('aside[aria-label="Zap Rail"] .group-head');
 		await expect(heads.filter({ hasText: 'guide' })).toHaveCount(1);
 		await expect(heads.filter({ hasText: 'policy' })).toHaveCount(1);
 	});

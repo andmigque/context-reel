@@ -71,7 +71,7 @@ export const SAMPLE_DOCS: Doc[] = [
 		title: 'welcome.md',
 		path: 'sample',
 		text: [
-			'# ContextReel',
+			'# Context Reel',
 			'',
 			'_N_ Models, 1 History.',
 			'',

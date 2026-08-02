@@ -4,7 +4,7 @@ import { test as base, expect, type Page, type Locator } from '@playwright/test'
 const DB_NAME = 'context-reel';
 
 /** The four views the navbar can show. */
-export type ViewTab = 'Editor' | 'Chat' | 'Config' | 'MarkMap';
+export type ViewTab = 'Editor' | 'Chat' | 'Config' | 'Mark Map';
 
 /**
  * Boot a clean workspace: clear persisted state, reload, and wait until the

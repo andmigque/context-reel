@@ -31,7 +31,7 @@
 	class="[grid-area:chord] border-l border-line bg-bg-sink px-[0.8rem] py-[0.9rem] overflow-y-auto min-h-0"
 	aria-label="Chord set"
 >
-	<h2 class="mt-0 mb-[0.8rem] text-[0.72rem] uppercase tracking-[0.14em] text-bone-dim">Chords</h2>
+	<h2 class="mt-0 mb-[0.8rem] text-[0.8rem] tracking-[0.08em] text-bone-dim">Chords</h2>
 	<ul class="list-none m-0 p-0 flex flex-col gap-[0.7rem]">
 		{#each bindings as b (b.command)}
 			<li class="flex flex-col gap-[0.3rem]">

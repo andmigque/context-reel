@@ -90,7 +90,7 @@
 	//// After the open panel paints, focus the selected doc if present, else the first doc.
 	async function focusDoc(): Promise<void> {
 		await tick();
-		const root = document.querySelector('aside[aria-label="ZapRail"]');
+		const root = document.querySelector('aside[aria-label="Zap Rail"]');
 		const target = root?.querySelector('.doc[data-selected="true"]') ?? root?.querySelector('.doc');
 		if (target instanceof HTMLElement) target.focus();
 	}
@@ -108,13 +108,13 @@
 	<aside
 		class="[grid-area:zap] flex flex-col gap-[0.6rem] border-r border-line bg-bg-sink px-[0.8rem] py-[0.9rem] min-h-0 max-rail:fixed max-rail:top-[var(--navbar-h)] max-rail:bottom-0 max-rail:left-0 max-rail:w-[var(--rail)] max-rail:z-20 max-rail:shadow-[0_0_30px_rgba(0,0,0,0.6)]"
 		data-rail
-		aria-label="ZapRail"
+		aria-label="Zap Rail"
 	>
 		<header class="flex items-center justify-between">
-			<h2 class="m-0 text-[0.72rem] uppercase tracking-[0.14em] text-bone-dim">⚡ Zap</h2>
+			<h2 class="m-0 text-[0.8rem] tracking-[0.08em] text-bone-dim">⚡ Zap</h2>
 			<button
 				class="leading-none text-[1.1rem] text-bone-dim bg-transparent border-0 px-1 hover:text-red"
-				aria-label="Close ZapRail"
+				aria-label="Close Zap Rail"
 				onclick={close}>×</button
 			>
 		</header>
@@ -155,7 +155,7 @@
 		</p>
 	</aside>
 {:else}
-	<button class="zap-closed [grid-area:zap]" data-rail aria-label="Open ZapRail" onclick={open}>
+	<button class="zap-closed [grid-area:zap]" data-rail aria-label="Open Zap Rail" onclick={open}>
 		<span class="zap-closed-label">⚡ Zap</span>
 	</button>
 {/if}
@@ -208,9 +208,8 @@
 	.zap-closed-label {
 		writing-mode: vertical-rl;
 		text-orientation: mixed;
-		font-size: 0.66rem;
-		text-transform: uppercase;
-		letter-spacing: 0.18em;
+		font-size: 0.74rem;
+		letter-spacing: 0.1em;
 	}
 
 	.kbd-hint {

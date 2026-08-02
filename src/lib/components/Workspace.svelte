@@ -66,7 +66,7 @@
 	// with the keyboard alone — arrow/tab then move between the docs.
 	async function focusDrawer(): Promise<void> {
 		await tick();
-		const root = document.querySelector('aside[aria-label="ZapRail"]');
+		const root = document.querySelector('aside[aria-label="Zap Rail"]');
 		const target = root?.querySelector('.doc[data-selected="true"]') ?? root?.querySelector('.doc');
 		if (target instanceof HTMLElement) target.focus();
 	}
@@ -121,7 +121,7 @@
 
 	<main class="view" aria-label="Active view">
 		<!-- Every view stays mounted; we toggle which is shown so a doc, a stream,
-		     the roster, and the mind map all survive a view swap with no reload. -->
+		     the roster, and the mark map all survive a view swap with no reload. -->
 		<div class="slot" tabindex="-1" hidden={workspace.view !== 'editor'}><Editor /></div>
 		<div class="slot" tabindex="-1" hidden={workspace.view !== 'chat'}><Chat /></div>
 		<div class="slot" tabindex="-1" hidden={workspace.view !== 'config'}><Config /></div>
@@ -142,7 +142,7 @@
 		role="dialog"
 		aria-label="Chord cheat sheet"
 	>
-		<h2 class="mt-0 mb-[0.8rem] text-[0.8rem] uppercase tracking-[0.14em] text-bone-dim">Chords</h2>
+		<h2 class="mt-0 mb-[0.8rem] text-[0.88rem] tracking-[0.08em] text-bone-dim">Chords</h2>
 		<ul class="list-none m-0 p-0 flex flex-col gap-2">
 			{#each CHORD_BINDINGS as b (b.command)}
 				<li class="flex items-center gap-[0.7rem] text-[0.88rem]">

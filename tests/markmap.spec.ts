@@ -1,13 +1,13 @@
 import { test, expect, type Workspace } from './support/workspace';
 import type { Page } from '@playwright/test';
 
-const MAP = 'svg[aria-label="Document mind map"]';
+const MAP = 'svg[aria-label="Document mark map"]';
 const NODE = `${MAP} g.markmap-node`;
 
 /** Show the map via its chord and wait for the tree to paint. */
 async function showMap(page: Page, workspace: Workspace): Promise<void> {
 	await page.keyboard.press('Alt+Shift+M');
-	await expect(workspace.tab('MarkMap')).toHaveAttribute('aria-selected', 'true');
+	await expect(workspace.tab('Mark Map')).toHaveAttribute('aria-selected', 'true');
 	await page.locator(NODE).first().waitFor({ state: 'visible' });
 }
 

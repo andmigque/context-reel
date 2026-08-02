@@ -273,7 +273,6 @@
 		{#if transcript.messages.length === 0}
 			<div class="m-auto text-center text-bone">
 				<p>Type a message to start. Every model shares this one history.</p>
-				<p class="text-bone-dim font-mono">Switch models any time. The next one reads the whole thread.</p>
 			</div>
 		{/if}
 	</div>
@@ -290,18 +289,21 @@
 			placeholder="Message the selected model (Enter sends, Shift+Enter adds a line)"
 			bind:value={composer}
 			onkeydown={onComposerKey}
-			rows="2"
+			rows="4"
 		></textarea>
+		<!-- The buttons held their height by stretching to the textarea, so doubling
+		     the composer doubled them too. h-16 pins them at the height they had at
+		     two rows, and self-end keeps them level with the bottom of the input. -->
 		{#if generating}
 			<button
 				type="button"
-				class="self-stretch min-w-[5.5rem] border border-red bg-red text-white rounded-card font-semibold"
+				class="self-end h-16 min-w-[5.5rem] border border-red bg-red text-white rounded-card font-semibold"
 				onclick={stop}>Stop</button
 			>
 		{:else}
 			<button
 				type="submit"
-				class="self-stretch min-w-[5.5rem] border border-green bg-green text-bg-sink rounded-card font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+				class="self-end h-16 min-w-[5.5rem] border border-green bg-green text-bg-sink rounded-card font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
 				disabled={composer.trim().length === 0}>Send</button
 			>
 		{/if}

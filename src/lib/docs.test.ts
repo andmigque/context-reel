@@ -19,6 +19,6 @@ describe('SAMPLE_DOCS', () => {
 	it('ships the welcome doc the editor preview test renders', () => {
 		const welcome = SAMPLE_DOCS.find((d) => d.id === 'welcome');
 		expect(welcome?.title).toBe('welcome.md');
-		expect(welcome?.text).toContain('# ContextReel');
+		expect(welcome?.text).toContain('# Context Reel');
 	});
 });

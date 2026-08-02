@@ -1,4 +1,4 @@
-# Markdown Editor Feature Specification
+# Editor Feature Specification
 
 # 1. Specification 👻
 

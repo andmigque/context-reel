@@ -1,4 +1,4 @@
-# N Model Chat Feature Specification
+# Chat Feature Specification
 
 # 1. Specification 👻
 

@@ -1,4 +1,4 @@
-# Workspace Config Feature Specification
+# Config Feature Specification
 
 # 1. Specification 👻
 

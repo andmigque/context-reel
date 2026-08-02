@@ -99,6 +99,15 @@ button {
 	background: #333845;
 }
 
+/* MarkMap table cells. markmap gives its cells a collapsed 1px border and no
+   padding, and exposes a variable only for the border, so cell text sat flush
+   against the rules. These nodes are injected into the SVG at runtime, which is
+   why this cannot live in the component's scoped style block. */
+.markmap-foreign th,
+.markmap-foreign td {
+	padding: 0.15rem 0.45rem;
+}
+
 /* Rendered markdown — shared by the editor preview and the chat bubble. */
 .md {
 	line-height: 1.6;

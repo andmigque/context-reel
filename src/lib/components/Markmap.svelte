@@ -148,11 +148,7 @@
 		--markmap-code-bg: var(--bg-sink);
 	}
 
-	/* markmap gives table cells a collapsed 1px border and no padding, and exposes
-	   no variable for padding — only --markmap-table-border. Text therefore sat
-	   flush against the cell edges. This is the one table rule the library omits. */
-	.markmap-svg :global(.markmap-foreign th),
-	.markmap-svg :global(.markmap-foreign td) {
-		padding: 0.15rem 0.45rem;
-	}
+	/* Table cell padding is NOT here. markmap injects its cells into the SVG at
+	   runtime, so a component-scoped rule would compile to a .svelte-<hash>
+	   descendant selector and never reach them. The rule lives in app.css. */
 </style>

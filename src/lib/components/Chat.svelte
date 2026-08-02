@@ -272,8 +272,8 @@
 
 		{#if transcript.messages.length === 0}
 			<div class="m-auto text-center text-bone">
-				<p>Ask a question and watch the answer form, token by token.</p>
-				<p class="text-bone-dim font-mono">No blank pause. Ever.</p>
+				<p>Type a message to start. Every model shares this one history.</p>
+				<p class="text-bone-dim font-mono">Switch models any time. The next one reads the whole thread.</p>
 			</div>
 		{/if}
 	</div>

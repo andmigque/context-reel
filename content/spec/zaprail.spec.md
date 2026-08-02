@@ -32,57 +32,26 @@ This table defines the lifecycle states available to an invariant.
 
 # 3. Documentation 📃
 
-Documentation is the public interpretation layer for the Zap Rail feature. 
+Documentation is the public interpretation layer for the Zap Rail feature.
 
 | # | Rule | Invariant | Status |
 | --- | --- | --- | --- |
 | 3.1 | MUST | Use Zap to name a markdown text transfer between application features | Approve |
 | 3.2 | MUST | Rename the doc component to the file component | Register |
-| 3.3 | MUST | Use a separate spec to define the file component | Register | 
+| 3.3 | MUST | Use a separate spec to define the file component | Register |
 
 
 # 4. Rail 🛤️
 
-The Zap Rail is designed as a thin vertical bar, resembling a rail, that stretches the length of the viewport, starting under the header section.
+The Zap Rail is a rail as defined in the Workspace specification 3.10. It presents the files a reader can zap into the rest of the application.
 
 | # | Rule | Invariant | Status |
 | --- | --- | --- | --- |
 | 4.1 | MUST | Set as the sticky left column in the 3 column main content section | Publish |
 | 4.2 | MUST | Hide scrollbars | Publish |
 | 4.3 | SHOULD | Show Open, Close, or Toggle controls | Publish |
-| 4.4 | SHOULD | Show a lightning bolt to indicate a zappable element | Publish
+| 4.4 | SHOULD | Show a lightning bolt to indicate a zappable element | Publish |
 | 4.5 | MUST | Show the word Zap toggling between horizontal when opened, vertical when closed | Publish |
 | 4.6 | MUST | Select the previously selected file on reopen | Publish |
 | 4.7 | MUST | Move focus to the main content center column on close | Publish |
 | 4.8 | MUST | Use native button semantics for file rows | Publish |
-
-# 5. Interfaces 🔌
-
-Interfaces define what the contracts between the rail and the zap target.
-
-## 5.1 Event
-
-The event interface allows application elements to start a Zap without sharing their behavior.
-
-| # | Rule | Invariant | Status |
-| --- | --- | --- | --- |
-| 5.1.1 | MAY | Send a zap event | Approve |
-| 5.1.2 | MUST | Send a zap event from the rail child file component to the markdown editor component | Publish |
-| 5.1.3 | MUST | Send a zap event from the rail child file component to the mark map | Publish | 
-
-## 5.2 Key Chord
-
-The key chord interface keeps zapping available without pointer navigation.
-
-| # | Rule | Invariant | Status |
-| --- | --- | --- | --- |
-| 5.2.1 | MUST | Register key chords to manage the full lifecycle of the rail | Approve |
-
-## 5.3 Child Component
-
-The child component interface separates Rail behavior from the feature presented inside it.
-
-| # | Rule | Invariant | Status |
-| --- | --- | --- | --- |
-| 5.3.1 | MUST | Use interfaces to inject the child component into the rail | Register |
-| 5.3.2 | MUST | 

@@ -27,6 +27,7 @@ This table defines the lifecycle states available to an invariant.
 | Publish | Deployed to production |
 | Register | Planned for a future deployment |
 | Remove | Remove from all deployments |
+| Request | Request architecture design review |
 
 # 3. Documentation 📃
 
@@ -38,6 +39,13 @@ Documentation is the public interpretation layer for the Workspace feature. Ther
 | 3.2 | MUST | Use Zap as defined in the Zap Rail specification | Approve | 
 | 3.3 | SHOULD | Write substantial, but relevant, background documentation on svelte to reduce learning curves | Approve |
 | 3.4 | SHOULD | Add the spec and svelte documentation to content for viewing in app | Approve |
+| 3.5 | MUST | Use Workspace to name the navbar plus the three column main content area as the application | Approve |
+| 3.6 | MUST | Use view to name whatever fills the middle column | Approve |
+| 3.7 | MUST | Use store exclusively with svelte pub/sub semantics , e.g. using the subscribe interface | Approve |
+| 3.8 | MUST | Assert runes, misnamed as stores, are refactored | Approve |
+| 3.9 | MUST | Use storage to mean durable storage such as databases  | Approve |
+| 3.10 | SHOULD | Use the term rail to mean a thin when collapsed vertical bar that consumes the entire vertical space it occupies | Register |
+
 
 
 # 4. Workspace 🖼️
@@ -46,12 +54,11 @@ The workspace is the primary component abstraction that behaves as the central c
 
 | # | Rule | Invariant | Status |
 | --- | --- | --- | --- |
-| 4.1 | SHOULD | Set a 3 column layout as rail, main content, rail | Publish |
+| 4.1 | MUST | Set a 3 column layout as rail, main content, rail | Publish |
 | 4.2 | MUST | Mount a pub/sub interface intended for child component subscription | Request |
 | 4.3 | MUST NOT | Assert lifecycle governance over child components through direct functional UI mutations | Request |
 | 4.4 | MUST | Build an interface that is reactive using framework feature sets where available | Approve |
-
-
-
-
-
+| 4.5 | MUST | Switch view state through a store | Approve |
+| 4.6 | MUST NOT | Scroll the Workspace itself | Publish |
+| 4.7 | MUST | Grant each column its own scrolling | Publish |
+| 4.8 | SHOULD | Expand a rail by delegating the action as a slide in and out drawer style toggling | Approve |

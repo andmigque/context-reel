@@ -37,7 +37,8 @@ test.describe('Editor', () => {
 	});
 
 	test('a rail pick loads the doc and the preview repaints to match', async ({ page }) => {
-		await page.locator('.rail button.pill', { hasText: 'welcome.md' }).click();
+		await page.keyboard.press('Alt+Shift+ArrowLeft'); // open the doc rail
+		await page.locator('button.doc', { hasText: 'welcome.md' }).click();
 		await expect(page.locator('#context-reel-editor')).toHaveValue(/# ContextReel/);
 		await page.keyboard.press('Alt+Shift+R');
 		await expect(page.locator('.editor .preview')).toContainText('ContextReel');
@@ -60,7 +61,8 @@ test.describe('Editor', () => {
 	});
 
 	test('preview toggles to full width', async ({ page }) => {
-		await page.locator('.rail button.pill', { hasText: 'welcome.md' }).click();
+		await page.keyboard.press('Alt+Shift+ArrowLeft'); // open the doc rail
+		await page.locator('button.doc', { hasText: 'welcome.md' }).click();
 		await page.keyboard.press('Alt+Shift+R');
 		const result = await page.evaluate(() => {
 			const preview = document.querySelector('.editor .preview') as HTMLElement;

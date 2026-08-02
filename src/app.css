@@ -12,7 +12,7 @@
 	--color-line-soft: #1d2027;
 	--color-bone: #d8d4cc;
 	--color-bone-dim: #8b8a85;
-	--color-green: #4ade80;
+	--color-green: #1d7b3f;
 	--color-amber: #ffaa24;
 	--color-red: #e62121;
 	--color-blue: #5b9dff;
@@ -42,7 +42,7 @@
 	--line-soft: #1d2027;
 	--bone: #d8d4cc;
 	--bone-dim: #8b8a85;
-	--green: #4ade80;
+	--green: #1d7b3f;
 	--amber: #ffaa24;
 	--red: #e62121;
 	--blue: #5b9dff;
@@ -53,6 +53,7 @@
 	--vendor-grok: #c9cdd4;
 
 	--rail: 14rem;
+	--rail-closed: 2.25rem;
 	--navbar-h: 3rem;
 	--radius: 0.5rem;
 	--mono: 'JetBrains Mono', 'Cascadia Code', ui-monospace, 'SF Mono', Menlo, monospace;

@@ -33,15 +33,15 @@ class WorkspaceStore {
 		this.view = view;
 	}
 
-	//// ### toggleDrawer
+	//// ### toggleZapRail
 	//// Toggle the doc drawer.
-	toggleDrawer(): void {
+	toggleZapRail(): void {
 		this.drawerOpen = !this.drawerOpen;
 	}
 
-	//// ### openDrawer
+	//// ### openRail
 	//// Open the doc drawer.
-	openDrawer(): void {
+	openRail(): void {
 		this.drawerOpen = true;
 	}
 

@@ -32,9 +32,9 @@ test.describe('Chord Rail', () => {
 		expect(editor?.chord).toBe('Alt+Shift+E');
 	});
 
-	test('the grid holds — rails keep their widths, middle stays one fraction', async ({ page }) => {
+	test('the grid holds — the closed zap rail is a thin track, middle takes the rest', async ({ page }) => {
 		const widths = await page.evaluate(() => {
-			const zap = document.querySelector('[aria-label="Doc drawer"]') as HTMLElement;
+			const zap = document.querySelector('[data-rail]') as HTMLElement;
 			const chord = document.querySelector('[aria-label="Chord set"]') as HTMLElement;
 			const view = document.querySelector('main.view') as HTMLElement;
 			return {
@@ -44,8 +44,8 @@ test.describe('Chord Rail', () => {
 				overflow: document.body.scrollWidth > document.body.clientWidth
 			};
 		});
-		expect(widths.zap).toBe(widths.chord); // both rails 14rem
-		expect(widths.view).toBeGreaterThan(widths.zap); // middle takes the rest
+		expect(widths.zap).toBeLessThan(widths.chord); // closed: thin rail vs the full chord rail
+		expect(widths.view).toBeGreaterThan(widths.chord); // middle takes the rest
 		expect(widths.overflow).toBe(false);
 	});
 

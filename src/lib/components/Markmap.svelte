@@ -147,4 +147,12 @@
 		--markmap-code-color: var(--bone);
 		--markmap-code-bg: var(--bg-sink);
 	}
+
+	/* markmap gives table cells a collapsed 1px border and no padding, and exposes
+	   no variable for padding — only --markmap-table-border. Text therefore sat
+	   flush against the cell edges. This is the one table rule the library omits. */
+	.markmap-svg :global(.markmap-foreign th),
+	.markmap-svg :global(.markmap-foreign td) {
+		padding: 0.15rem 0.45rem;
+	}
 </style>

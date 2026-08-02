@@ -78,7 +78,11 @@
 
 		const mod = await import('markdown-text-editor');
 		const MarkdownEditor = mod.default;
-		new MarkdownEditor('#context-reel-editor', { mode: 'hybrid' });
+		// The dependency reads options.theme, falling back to the nearest [data-theme]
+		// ancestor. Nothing in the app sets that attribute, so with no theme passed it
+		// painted its default light surface and edit mode flashed white against the
+		// dark workspace. ContextReel is dark-only, so state it here.
+		new MarkdownEditor('#context-reel-editor', { mode: 'hybrid', theme: 'dark' });
 
 		textarea.dispatchEvent(new Event('input', { bubbles: true }));
 		mounted = true;
@@ -113,7 +117,7 @@
 		>
 	</div>
 
-	<div class="flex-1 min-h-0 flex">
+	<div class="surface flex-1 min-h-0 flex">
 		<!-- The host textarea. Its value is the document. -->
 		<textarea
 			id="context-reel-editor"
@@ -125,7 +129,7 @@
 		></textarea>
 
 		{#if previewing}
-			<div class="md flex-1 min-h-0 overflow-y-auto px-[1.4rem] py-4" aria-label="Rendered preview">
+			<div class="preview md flex-1 min-h-0 overflow-y-auto px-[1.4rem] py-4" aria-label="Rendered preview">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html previewHtml}
 			</div>

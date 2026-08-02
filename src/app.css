@@ -110,11 +110,52 @@ button {
 .md > :last-child {
 	margin-bottom: 0;
 }
+/* Tailwind preflight sets every heading to font-size: inherit and zeroes the
+   margin on every element, so without these rules h1 through h6 all rendered at
+   body size with nothing between them and the prose that follows. The scale is
+   in em so the same rules read correctly in a full-width preview and in a chat
+   bubble. */
 .md h1,
 .md h2,
-.md h3 {
+.md h3,
+.md h4,
+.md h5,
+.md h6 {
+	margin: 1.6em 0 0.6em;
 	line-height: 1.25;
 	color: #efece5;
+	font-weight: 600;
+}
+.md h1 {
+	font-size: 1.6em;
+	font-weight: 700;
+}
+.md h2 {
+	font-size: 1.35em;
+}
+.md h3 {
+	font-size: 1.15em;
+}
+.md h4 {
+	font-size: 1em;
+}
+.md h5 {
+	font-size: 0.92em;
+	color: var(--bone);
+}
+.md h6 {
+	font-size: 0.85em;
+	color: var(--bone-dim);
+}
+
+/* Block rhythm, also erased by preflight. */
+.md p {
+	margin: 0.8em 0;
+}
+.md hr {
+	margin: 1.6em 0;
+	border: 0;
+	border-top: 1px solid var(--line);
 }
 .md a {
 	color: var(--green);
@@ -128,6 +169,7 @@ button {
 	padding: 0.1em 0.35em;
 }
 .md pre {
+	margin: 0.9em 0;
 	background: var(--bg-sink);
 	border: 1px solid var(--line);
 	border-radius: var(--radius);
@@ -147,5 +189,38 @@ button {
 }
 .md ul,
 .md ol {
+	margin: 0.8em 0;
 	padding-left: 1.3rem;
+}
+.md li {
+	margin: 0.25em 0;
+}
+
+/* GFM tables. The renderer emits real <table> markup, but with no rules here the
+   cells carried no border and no padding, so a table read as loosely aligned
+   text. The block/max-content pair keeps a wide table scrolling inside its own
+   box instead of stretching the middle column past its track. */
+.md table {
+	display: block;
+	width: max-content;
+	max-width: 100%;
+	overflow-x: auto;
+	border-collapse: collapse;
+	margin: 0.8rem 0;
+	font-size: 0.94em;
+}
+.md th,
+.md td {
+	border: 1px solid var(--line);
+	padding: 0.4rem 0.7rem;
+	text-align: left;
+	vertical-align: top;
+}
+.md th {
+	background: var(--bg-raise);
+	color: #efece5;
+	font-weight: 600;
+}
+.md tbody tr:nth-child(even) {
+	background: color-mix(in srgb, var(--bg-raise) 45%, transparent);
 }

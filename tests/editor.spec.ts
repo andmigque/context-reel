@@ -60,6 +60,28 @@ test.describe('Editor', () => {
 		expect(result.inlineHeight).toBe(''); // no frozen px height
 	});
 
+	test('edit and preview both sit on the dark surface', async ({ page, workspace }) => {
+		await workspace.setEditorDoc('# theme parity');
+		const wrapper = page.locator('.markdown-editor-wrapper');
+		await expect(wrapper).toHaveAttribute('data-theme', 'dark');
+		const editBg = await wrapper.evaluate((el) => getComputedStyle(el).backgroundColor);
+		expect(editBg).not.toBe('rgb(255, 255, 255)');
+	});
+
+	test('a preview table renders with cell borders and padding', async ({ page, workspace }) => {
+		await workspace.setEditorDoc('| a | b |\n| --- | --- |\n| 1 | 2 |');
+		await page.keyboard.press('Alt+Shift+R');
+		const cell = page.locator('.editor .preview td').first();
+		await expect(cell).toBeVisible();
+		const box = await cell.evaluate((el) => {
+			const s = getComputedStyle(el);
+			return { border: s.borderTopWidth, padX: s.paddingLeft, padY: s.paddingTop };
+		});
+		expect(parseFloat(box.border)).toBeGreaterThan(0);
+		expect(parseFloat(box.padX)).toBeGreaterThan(0);
+		expect(parseFloat(box.padY)).toBeGreaterThan(0);
+	});
+
 	test('preview toggles to full width', async ({ page }) => {
 		await page.keyboard.press('Alt+Shift+ArrowLeft'); // open the doc rail
 		await page.locator('button.doc', { hasText: 'welcome.md' }).click();

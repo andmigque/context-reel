@@ -1,6 +1,7 @@
 import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
 import type { StreamRequest } from '$lib/chat/stream';
+import { readSse } from '$lib/chat/sse';
 import type { TranscriptTurn, Vendor } from '$lib/types';
 
 type Send = (event: { type: 'token'; value: string } | { type: 'done' } | { type: 'error'; message: string }) => void;
@@ -207,37 +208,3 @@ async function requireOk(res: Response): Promise<void> {
 	throw new Error(text || `Provider request failed: ${res.status}`);
 }
 
-async function readSse(res: Response, onEvent: (event: any) => void): Promise<void> {
-	if (res.body === null) throw new Error('Provider returned no stream.');
-
-	const reader = res.body.getReader();
-	const decoder = new TextDecoder();
-	let buffer = '';
-
-	for (;;) {
-		const { value, done } = await reader.read();
-		if (done) break;
-		buffer += decoder.decode(value, { stream: true });
-
-		let boundary = buffer.indexOf('\n\n');
-		while (boundary >= 0) {
-			const raw = buffer.slice(0, boundary);
-			buffer = buffer.slice(boundary + 2);
-			readSseEvent(raw, onEvent);
-			boundary = buffer.indexOf('\n\n');
-		}
-	}
-
-	if (buffer.trim().length > 0) readSseEvent(buffer, onEvent);
-}
-
-function readSseEvent(raw: string, onEvent: (event: any) => void): void {
-	const data = raw
-		.split(/\r?\n/)
-		.filter((line) => line.startsWith('data:'))
-		.map((line) => line.slice(5).trim())
-		.join('\n');
-
-	if (data.length === 0 || data === '[DONE]') return;
-	onEvent(JSON.parse(data));
-}

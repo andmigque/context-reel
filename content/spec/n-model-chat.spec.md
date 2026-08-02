@@ -29,6 +29,8 @@ This table defines the lifecycle states available to an invariant.
 | Publish | Deployed to production |
 | Register | Planned for a future deployment |
 | Remove | Remove from all deployments |
+| Request | Request architecture design review |
+
 
 # 3. Documentation 📃
 

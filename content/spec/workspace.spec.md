@@ -30,15 +30,28 @@ This table defines the lifecycle states available to an invariant.
 
 # 3. Documentation 📃
 
-Documentation is the public interpretation layer for the Workspace feature.
+Documentation is the public interpretation layer for the Workspace feature. There is significant background vocabulary required to achieve high readability and semantic coherence in the workspace. The section enumerates that vocabulary.
 
 | # | Rule | Invariant | Status |
 | --- | --- | --- | --- |
+| 3.1 | SHOULD NOT | Read store and storage as synonyms | Remove |
+| 3.2 | MUST | Use Zap as defined in the Zap Rail specification | Approve | 
+| 3.3 | SHOULD | Write substantial, but relevant, background documentation on svelte to reduce learning curves | Approve |
+| 3.4 | SHOULD | Add the spec and svelte documentation to content for viewing in app | Approve |
 
-# 4. Composition 🖼️
 
-.........................
+# 4. Workspace 🖼️
+
+The workspace is the primary component abstraction that behaves as the central coordination for the application.
 
 | # | Rule | Invariant | Status |
 | --- | --- | --- | --- |
-| 4.1 | MUST | Set a 3 column layout as rail, main content, rail | Publish |
+| 4.1 | SHOULD | Set a 3 column layout as rail, main content, rail | Publish |
+| 4.2 | MUST | Mount a pub/sub interface intended for child component subscription | Request |
+| 4.3 | MUST NOT | Assert lifecycle governance over child components through direct functional UI mutations | Request |
+| 4.4 | MUST | Build an interface that is reactive using framework feature sets where available | Approve |
+
+
+
+
+

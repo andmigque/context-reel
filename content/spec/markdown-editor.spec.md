@@ -29,6 +29,8 @@ This table defines the lifecycle states available to an invariant.
 | Publish | Deployed to production |
 | Register | Planned for a future deployment |
 | Remove | Remove from all deployments |
+| Request | Request architecture design review |
+
 
 # 3. Documentation 📃
 
@@ -39,7 +41,7 @@ Documentation is the public interpretation layer for the Markdown Editor feature
 
 # 4. Messages ⚡
 
-The Markdown Editor is a markdown WSYIWYG editor 
+The Markdown Editor is a markdown WSYIWYG editor.
 
 | # | Rule | Invariant | Status |
 | --- | --- | --- | --- |

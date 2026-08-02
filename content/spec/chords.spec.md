@@ -29,6 +29,7 @@ This table defines the lifecycle states available to an invariant.
 | Publish | Deployed to production |
 | Register | Planned for a future deployment |
 | Remove | Remove from all deployments |
+| Request | Request architecture design review |
 
 # 3. Documentation 📃
 
@@ -39,10 +40,13 @@ Documentation is the public interpretation layer for the Chord Rail feature.
 
 # 4. Rail 🛤️
 
-The Chord Rail is the right column of the Workspace and keeps key chords available without covering the main content.
+The Chord Rail lives in the right hand column.
 
 | # | Rule | Invariant | Status |
 | --- | --- | --- | --- |
-| 4.1 | MUST | Set the Chord Rail as the right column in the three-column Workspace | Publish |
-| 4.2 | MUST | Open and close the Chord Rail with Alt+Shift+ArrowRight | Register |
-| 4.3 | MUST NOT | Use the Chords button to open or close the Chord Rail | Register |
+| 4.1 | SHOULD | Open, close, or toggle the rail via key chords | Request |
+| 4.2 | MUST | Show a data driven list of chords | Request |
+| 4.3 | MUST | Mount chord storage that enables elements to register chords | Request |
+| 4.4 | MUST | Protect chord storage from duplicate entries. The Chord Rail should block, then notify.  | Request |
+| 4.5 | SHOULD NOT | Send mutations to chord storage. | Request |
+

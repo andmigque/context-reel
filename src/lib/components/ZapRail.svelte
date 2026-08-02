@@ -75,7 +75,7 @@
 	//// ### open
 	//// Open the ZapRail and move focus onto a doc, so the list is browsable from the keyboard.
 	function open(): void {
-		workspace.openDrawer();
+		workspace.openRail();
 		void focusDoc();
 	}
 

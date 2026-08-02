@@ -27,7 +27,7 @@
 				workspace.show('markmap');
 				break;
 			case 'workspace.openZapDrawer':
-				workspace.toggleDrawer();
+				workspace.toggleZapRail();
 				if (workspace.drawerOpen) void focusDrawer();
 				else void focusView(workspace.view);
 				break;

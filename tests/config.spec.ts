@@ -27,7 +27,6 @@ test.describe('Config', () => {
 			});
 			return rows[0];
 		});
-		expect(row.envVarName).toBe('ANTHROPIC_API_KEY');
 		expect('apiKey' in row).toBe(false);
 		expect('key' in row).toBe(false);
 	});

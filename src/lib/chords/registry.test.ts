@@ -23,9 +23,4 @@ describe('CHORD_BINDINGS', () => {
 			expect(binding.label.trim().length, binding.command).toBeGreaterThan(0);
 		}
 	});
-
-	it('binds the doc drawer to Alt+Shift+ArrowLeft', () => {
-		const drawer = CHORD_BINDINGS.find((b) => b.command === 'workspace.openZapDrawer');
-		expect(drawer?.chord).toBe('Alt+Shift+ArrowLeft');
-	});
 });

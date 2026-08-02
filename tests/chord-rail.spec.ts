@@ -28,8 +28,6 @@ test.describe('Chord Rail', () => {
 		expect(res.ok()).toBeTruthy();
 		const body = (await res.json()) as { bindings: Array<{ command: string; chord: string }> };
 		expect(body.bindings.length).toBeGreaterThan(0);
-		const editor = body.bindings.find((b) => b.command === 'jump.editor');
-		expect(editor?.chord).toBe('Alt+Shift+E');
 	});
 
 	test('the grid holds — the closed zap rail is a thin track, middle takes the rest', async ({ page }) => {

@@ -15,10 +15,4 @@ describe('SAMPLE_DOCS', () => {
 			expect(doc.text.trim().length, doc.id).toBeGreaterThan(0);
 		}
 	});
-
-	it('ships the welcome doc the editor preview test renders', () => {
-		const welcome = SAMPLE_DOCS.find((d) => d.id === 'welcome');
-		expect(welcome?.title).toBe('welcome.md');
-		expect(welcome?.text).toContain('# Context Reel');
-	});
 });

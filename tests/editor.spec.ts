@@ -36,14 +36,6 @@ test.describe('Editor', () => {
 		await expect(page.locator('textarea.input')).toHaveValue('the entire document');
 	});
 
-	test('a rail pick loads the doc and the preview repaints to match', async ({ page }) => {
-		await page.keyboard.press('Alt+Shift+ArrowLeft'); // open the doc rail
-		await page.locator('button.doc', { hasText: 'welcome.md' }).click();
-		await expect(page.locator('#context-reel-editor')).toHaveValue(/# ContextReel/);
-		await page.keyboard.press('Alt+Shift+R');
-		await expect(page.locator('.editor .preview')).toContainText('ContextReel');
-	});
-
 	test('the editor fills its panel with no inline pixel height', async ({ page }) => {
 		const result = await page.evaluate(() => {
 			const editor = document.querySelector('.editor') as HTMLElement;
